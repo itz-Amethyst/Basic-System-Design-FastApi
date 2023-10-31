@@ -1,9 +1,9 @@
 from random import randrange
 
-from fastapi import FastAPI
+from fastapi import FastAPI , Response , status , HTTPException
 from fastapi.params import Body
 from models import Post
-from utils.CustomMethods import find_post
+from utils.CustomMethods import find_post , find_index_post
 
 app = FastAPI()
 
@@ -24,7 +24,7 @@ def get_posts():
     return{"data": my_posts}
 
 
-@app.post('/createpost')
+@app.post('/createpost', status_code = status.HTTP_201_CREATED)
 def create_Post(new_post: Post):
     # print(new_post)
     # print(new_post.model_dump())
@@ -43,7 +43,24 @@ def get_latest_post():
 
 
 @app.get("/posts/{id}")
-def get_post_by_id(id:int):
+def get_post_by_id(id:int, response: Response):
     post = find_post(id, my_posts)
+    if not post:
+
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
+                            detail = f"post with this id: {id} was not found")
+
+        # response.status_code = status.HTTP_404_NOT_FOUND
+        # return {'message': f"post with this id {id} was not found"}
     return {'data': post}
 
+
+@app.delete('/posts/{id}', status_code = status.HTTP_204_NO_CONTENT)
+def delete_post(id:int):
+    index = find_index_post(id, my_posts)
+
+    if index == None:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = f"post with this id {id} does not exists")
+
+    my_posts.pop(index)
+    return Response(status_code = status.HTTP_204_NO_CONTENT)
