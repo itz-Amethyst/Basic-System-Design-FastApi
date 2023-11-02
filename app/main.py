@@ -1,9 +1,28 @@
 from random import randrange
 
+import psycopg2
+import inspect
+from psycopg2.extras import RealDictCursor
+
 from fastapi import FastAPI , Response , status , HTTPException
 from fastapi.params import Body
 from models import Post
 from utils.CustomMethods import find_post , find_index_post
+import time
+print(inspect.getsource(time.sleep(3)))
+
+while True:
+
+    try:
+        conn = psycopg2.connect(host = 'localhost', database = 'fastapi', user = 'postgres', password = '', cursor_factory = RealDictCursor)
+        cursor = conn.cursor()
+        print('Database Connected !')
+        break
+    except Exception as error:
+        print("Connection To Database Failed !")
+        print(f"Error: {error}")
+        time.sleep(5)
+
 
 app = FastAPI()
 
@@ -21,18 +40,24 @@ async def root():
 
 @app.get('/posts')
 def get_posts():
-    return{"data": my_posts}
+    cursor.execute("""SELECT * FROM posts""")
+    return{"data": cursor.fetchall()}
 
 
 @app.post('/createpost', status_code = status.HTTP_201_CREATED)
 def create_Post(new_post: Post):
-    # print(new_post)
     # print(new_post.model_dump())
-    post_dict = new_post.dict()
-    post_dict['id'] = randrange(0, 100000)
-    my_posts.append(post_dict)
+    # post_dict = new_post.dict()
+    # post_dict['id'] = randrange(0, 100000)
+    # my_posts.append(post_dict)
 
-    return{"data": post_dict}
+    # %s kinda variable
+    cursor.execute("""INSERT INTO posts(title, content, published, rating) VALUES (%s, %s, %s)""", (post.title, post.content, post.published, post.rating))
+    new_post = cursor.fetchone()
+    # like -> Save changes ! don't forget
+    conn.commit()
+
+    return{"data": new_post}
 
 
 #? orders matter so first implement static ones than generics
