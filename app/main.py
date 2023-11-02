@@ -69,7 +69,13 @@ def get_latest_post():
 
 @app.get("/posts/{id}")
 def get_post_by_id(id:int, response: Response):
-    post = find_post(id, my_posts)
+
+    # NOTE -> id should be parsed to string when you give it to db
+    cursor.execute("""SELECT * FROM posts WHERE id = %s""", (str(id),))
+    post = cursor.fetchone()
+
+
+    # post = find_post(id, my_posts)
     if not post:
 
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
@@ -77,28 +83,39 @@ def get_post_by_id(id:int, response: Response):
 
         # response.status_code = status.HTTP_404_NOT_FOUND
         # return {'message': f"post with this id {id} was not found"}
+
     return {'data': post}
 
 
 @app.delete('/posts/{id}', status_code = status.HTTP_204_NO_CONTENT)
 def delete_post(id:int):
-    index = find_index_post(id, my_posts)
+    # index = find_index_post(id, my_posts)
 
-    if index == None:
+    cursor.execute("""SELECT * FROM posts WHERE id = %S""", (str(id),))
+    index = cursor.fetchone()
+    conn.commit()
+
+
+    if index is None:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = f"post with this id {id} does not exists")
 
-    my_posts.pop(index)
+    # my_posts.pop(index)
     return Response(status_code = status.HTTP_204_NO_CONTENT)
 
 
 @app.put('/posts/{id}')
 def update_post(id:int, post:Post):
-    index = find_index_post(id , source = my_posts)
+    # index = find_index_post(id , source = my_posts)
+
+    cursor.execute("""UPDATE posts SET title = %s content = %s published = %s rating = %s WHERE id = %s RETURNING *""" ,
+                   (post.title , post.content , post.published , post.rating, str(id),))
+    index = cursor.fetchone()
+    conn.commit()
 
     if index is None:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = f"post with this id {id} does not exists")
 
-    post_dict = post.dict()
-    post_dict['id'] = id
-    my_posts[index] = post_dict
-    return {'data': post_dict}
+    # post_dict = post.dict()
+    # post_dict['id'] = id
+    # my_posts[index] = post_dict
+    return {'data': index}
