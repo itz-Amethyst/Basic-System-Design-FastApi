@@ -17,7 +17,7 @@ async def root():
     return {"message": "hello there"}
 
 @app.get('/sqlalchemy')
-def test_posts(db: Session = Depends(get_db())):
+def test_posts(db: Session = Depends(get_db)):
     return {"message": "success"}
 
 @app.get('/posts')
