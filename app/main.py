@@ -5,6 +5,7 @@ from models import Post
 from . import models
 from .database import engine , get_db
 from sqlalchemy.orm import Session
+from sqlalchemy import update
 
 
 models.Base.metadata.create_all(bind = engine)
@@ -40,31 +41,49 @@ def create_Post(post: Post, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_post)
 
-    return{"data": "test"}
+    return{"data": new_post}
 
 @app.get("/posts/{id}")
 def get_post_by_id(id:int, db: Session = Depends(get_db)):
 
-    post = db.query(models.Post).filter(models.Post.id == id).first()
-    # post2 = db.query(models.Post).get(id)
+    # post = db.query(models.Post).filter(models.Post.title == title).first()
+    post2 = db.query(models.Post).get(id)
 
-    if not post:
+    if not post2:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND ,
                             detail = f"post with this id: {id} was not found")
 
-    return {'data': post}
+    return {'data': post2}
 
 
 @app.delete('/posts/{id}', status_code = status.HTTP_204_NO_CONTENT)
 def delete_post(id:int, db: Session = Depends(get_db)):
 
 
+    post = db.query(models.Post).get(id)
 
 
-    return Response(status_code = status.HTTP_204_NO_CONTENT)
+    if post is None:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND ,
+                            detail = f"post with this id: {id} was not found")
+
+    db.delete(post)
+    db.commit()
+
+    return Response(status_code = status.HTTP_204_NO_CONTENT,)
 
 
 @app.put('/posts/{id}')
-def update_post(id:int, post:Post):
+def update_post(id:int, post:Post, db: Session = Depends(get_db) ):
 
-    return {'data': "test"}
+    post2 = db.query(models.Post).get(id)
+
+    if post2 is None:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND ,
+                            detail = f"post with this id: {id} was not found")
+
+    # you can put exclude here later
+    db.execute(update(models.Post).where(models.Post.id == id), post.dict())
+    db.commit()
+
+    return {'data': post}
