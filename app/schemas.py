@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class Post(BaseModel):
@@ -27,8 +27,13 @@ class PostView(Post):
 
 
 class UserCreate(BaseModel):
-    email:str
+    email: EmailStr
     password:str
+
+class UserView(BaseModel):
+    id : str
+    email: EmailStr
+    created_at: datetime
 
 # @dataclass
 # class Post:
