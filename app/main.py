@@ -110,4 +110,13 @@ def user(user:schemas.UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 
+@app.get('/users/{id}', response_model = schemas.UserView)
+def get_user(id: str, db: Session = Depends(get_db)):
+
+    user = db.query(models.User).get(id)
+
+    if not user:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = f"User with this id {id} does not exists")
+
+    return user
 #endregion
