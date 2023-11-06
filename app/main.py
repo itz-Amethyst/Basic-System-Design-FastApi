@@ -2,6 +2,8 @@
 from fastapi import FastAPI , Response , status , HTTPException, Depends
 from . import schemas
 
+from typing import List
+
 from . import models
 from .database import engine , get_db
 from sqlalchemy.orm import Session
@@ -21,14 +23,13 @@ async def root():
 def test_posts(db: Session = Depends(get_db)):
     return {"message": db.query(models.Post).all()}
 
-@app.get('/posts')
+@app.get('/posts', response_model = list[schemas.PostView])
 def get_posts(db: Session = Depends(get_db)):
 
+    return db.query(models.Post).all()
 
-    return{"data": db.query(models.Post).all()}
 
-
-@app.post('/createpost', status_code = status.HTTP_201_CREATED)
+@app.post('/createpost', status_code = status.HTTP_201_CREATED, response_model = schemas.PostView)
 def create_Post(post: schemas.CreatePost, db: Session = Depends(get_db)):
 
     #? Old way
@@ -41,9 +42,9 @@ def create_Post(post: schemas.CreatePost, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_post)
 
-    return{"data": new_post}
+    return new_post
 
-@app.get("/posts/{id}")
+@app.get("/posts/{id}", response_model = schemas.PostView)
 def get_post_by_id(id:int, db: Session = Depends(get_db)):
 
     # post = db.query(models.Post).filter(models.Post.title == title).first()
@@ -53,7 +54,7 @@ def get_post_by_id(id:int, db: Session = Depends(get_db)):
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND ,
                             detail = f"post with this id: {id} was not found")
 
-    return {'data': post2}
+    return post2
 
 
 @app.delete('/posts/{id}', status_code = status.HTTP_204_NO_CONTENT)
@@ -73,7 +74,7 @@ def delete_post(id:int, db: Session = Depends(get_db)):
     return Response(status_code = status.HTTP_204_NO_CONTENT,)
 
 
-@app.put('/posts/{id}')
+@app.put('/posts/{id}', response_model = schemas.PostView)
 def update_post(id:int, post: schemas.UpdatePost, db: Session = Depends(get_db) ):
 
     post2 = db.query(models.Post).get(id)
@@ -86,4 +87,4 @@ def update_post(id:int, post: schemas.UpdatePost, db: Session = Depends(get_db) 
     db.execute(update(models.Post).where(models.Post.id == id), post.dict())
     db.commit()
 
-    return {'data': post}
+    return post
