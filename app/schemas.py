@@ -23,7 +23,12 @@ class PostView(Post):
 
     # Not necessary
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+
+class UserCreate(BaseModel):
+    email:str
+    password:str
 
 # @dataclass
 # class Post:

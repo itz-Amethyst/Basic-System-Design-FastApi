@@ -1,8 +1,9 @@
 
+
 from fastapi import FastAPI , Response , status , HTTPException, Depends
 from . import schemas
 
-from typing import List
+# from typing import List
 
 from . import models
 from .database import engine , get_db
@@ -19,8 +20,20 @@ app = FastAPI()
 async def root():
     return {"message": "hello there"}
 
+@app.post('/user')
+def user(user:schemas.UserCreate, db: Session = Depends(get_db)):
+
+    new_user = models.User(**user.dict())
+    print(new_user)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user
+
 @app.get('/sqlalchemy')
 def test_posts(db: Session = Depends(get_db)):
+
     return {"message": db.query(models.Post).all()}
 
 @app.get('/posts', response_model = list[schemas.PostView])
