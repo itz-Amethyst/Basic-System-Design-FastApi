@@ -1,6 +1,8 @@
 
 
 from fastapi import FastAPI , Response , status , HTTPException, Depends
+
+from utils.Hashes import hash_password
 from . import schemas
 
 # from typing import List
@@ -19,17 +21,6 @@ app = FastAPI()
 @app.get('/')
 async def root():
     return {"message": "hello there"}
-
-@app.post('/user')
-def user(user:schemas.UserCreate, db: Session = Depends(get_db)):
-
-    new_user = models.User(**user.dict())
-    print(new_user)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
-    return new_user
 
 @app.get('/sqlalchemy')
 def test_posts(db: Session = Depends(get_db)):
@@ -101,3 +92,22 @@ def update_post(id:int, post: schemas.UpdatePost, db: Session = Depends(get_db) 
     db.commit()
 
     return post
+
+
+#region User
+
+@app.post('/user', status_code = status.HTTP_201_CREATED, response_model = schemas.UserView)
+def user(user:schemas.UserCreate, db: Session = Depends(get_db)):
+
+    user.password = hash_password(user.password)
+
+    new_user = models.User(**user.dict())
+    print(new_user)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user
+
+
+#endregion
