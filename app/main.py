@@ -1,6 +1,6 @@
 
 from fastapi import FastAPI , Response , status , HTTPException, Depends
-from models import Post
+from . import schemas
 
 from . import models
 from .database import engine , get_db
@@ -29,7 +29,7 @@ def get_posts(db: Session = Depends(get_db)):
 
 
 @app.post('/createpost', status_code = status.HTTP_201_CREATED)
-def create_Post(post: Post, db: Session = Depends(get_db)):
+def create_Post(post: schemas.CreatePost, db: Session = Depends(get_db)):
 
     #? Old way
     # new_post = models.Post(title = post.title, content = post.content, published = post.published, rating = post.rating)
@@ -74,7 +74,7 @@ def delete_post(id:int, db: Session = Depends(get_db)):
 
 
 @app.put('/posts/{id}')
-def update_post(id:int, post:Post, db: Session = Depends(get_db) ):
+def update_post(id:int, post: schemas.UpdatePost, db: Session = Depends(get_db) ):
 
     post2 = db.query(models.Post).get(id)
 

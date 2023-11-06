@@ -1,7 +1,6 @@
 from typing import Optional
-
 from pydantic import BaseModel
-from dataclasses import dataclass
+
 
 class Post(BaseModel):
     title: str
@@ -9,6 +8,12 @@ class Post(BaseModel):
     published: bool = False
     rating: Optional[int] = None
 
+# Huum maybe works
+class CreatePost(Post):
+    pass
+
+class UpdatePost(Post):
+    test: str
 # @dataclass
 # class Post:
 #     title: str
