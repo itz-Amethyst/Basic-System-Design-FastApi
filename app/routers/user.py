@@ -6,10 +6,14 @@ from utils.Hashes import hash_password
 from .. import models
 from .. import schemas
 
-router = APIRouter()
+router = APIRouter(
+    prefix = '/user',
+    # You can add multiple tags
+    tags = ['Users']
+)
 
-@router.post('/user', status_code = status.HTTP_201_CREATED, response_model = schemas.UserView)
-def user(user:schemas.UserCreate, db: Session = Depends(get_db)):
+@router.post('/', status_code = status.HTTP_201_CREATED, response_model = schemas.UserView)
+def create_user(user:schemas.UserCreate, db: Session = Depends(get_db)):
 
     user.password = hash_password(user.password)
 
@@ -22,7 +26,7 @@ def user(user:schemas.UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 
-@router.get('/users/{id}', response_model = schemas.UserView)
+@router.get('/{id}', response_model = schemas.UserView)
 def get_user(id: str, db: Session = Depends(get_db)):
 
     user = db.query(models.User).get(id)

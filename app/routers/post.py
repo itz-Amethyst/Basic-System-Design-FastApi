@@ -1,24 +1,28 @@
 from fastapi import Depends, HTTPException, status, Response, APIRouter
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from .. import models
 from .. import schemas
 
-router = APIRouter()
+router = APIRouter(
+    prefix = '/post',
+    tags = ['Posts']
+)
 
 @router.get('/sqlalchemy')
 def test_posts(db: Session = Depends(get_db)):
 
     return {"message": db.query(models.Post).all()}
 
-@router.get('/posts', response_model = list[schemas.PostView])
+@router.get('/', response_model = list[schemas.PostView])
 def get_posts(db: Session = Depends(get_db)):
 
     return db.query(models.Post).all()
 
 
-@router.post('/createpost', status_code = status.HTTP_201_CREATED, response_model = schemas.PostView)
+@router.post('/', status_code = status.HTTP_201_CREATED, response_model = schemas.PostView)
 def create_Post(post: schemas.CreatePost, db: Session = Depends(get_db)):
 
     #? Old way
@@ -33,7 +37,7 @@ def create_Post(post: schemas.CreatePost, db: Session = Depends(get_db)):
 
     return new_post
 
-@router.get("/posts/{id}", response_model = schemas.PostView)
+@router.get("/{id}", response_model = schemas.PostView)
 def get_post_by_id(id:int, db: Session = Depends(get_db)):
 
     # post = db.query(models.Post).filter(models.Post.title == title).first()
@@ -46,7 +50,7 @@ def get_post_by_id(id:int, db: Session = Depends(get_db)):
     return post2
 
 
-@router.delete('/posts/{id}', status_code = status.HTTP_204_NO_CONTENT)
+@router.delete('/{id}', status_code = status.HTTP_204_NO_CONTENT)
 def delete_post(id:int, db: Session = Depends(get_db)):
 
 
@@ -62,7 +66,7 @@ def delete_post(id:int, db: Session = Depends(get_db)):
 
     return Response(status_code = status.HTTP_204_NO_CONTENT,)
 
-@router.put('/posts/{id}', response_model = schemas.PostView)
+@router.put('/{id}', response_model = schemas.PostView)
 def update_post(id:int, post: schemas.UpdatePost, db: Session = Depends(get_db) ):
 
     post2 = db.query(models.Post).get(id)
