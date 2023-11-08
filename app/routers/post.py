@@ -3,8 +3,7 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from .. import models
-from .. import schemas
+from app import models , oauth2 , schemas
 
 router = APIRouter(
     prefix = '/post',
@@ -23,13 +22,14 @@ def get_posts(db: Session = Depends(get_db)):
 
 
 @router.post('/', status_code = status.HTTP_201_CREATED, response_model = schemas.PostView)
-def create_Post(post: schemas.CreatePost, db: Session = Depends(get_db)):
+def create_Post(post: schemas.CreatePost, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
 
     #? Old way
     # new_post = models.Post(title = post.title, content = post.content, published = post.published, rating = post.rating)
 
     #! Shorter way
     #* Note: ** -> unpack
+    print(user_id)
     new_post = models.Post(**post.dict())
     db.add(new_post)
     db.commit()
