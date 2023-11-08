@@ -35,6 +35,11 @@ class UserView(BaseModel):
     email: EmailStr
     created_at: datetime
 
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
 # @dataclass
 # class Post:
 #     title: str
