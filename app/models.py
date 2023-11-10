@@ -2,6 +2,7 @@
 from datetime import datetime
 
 from sqlalchemy import Column , Integer , String , Boolean , TIMESTAMP , ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text, func
 from app.database import Base
 from utils.CustomMethods import generate_generic_id
@@ -17,6 +18,8 @@ class Post(Base):
     rating = Column(Integer, nullable = False,)
     created_at = Column(TIMESTAMP(timezone = True), nullable = False, server_default = text('now()'), default = datetime.now())
     owner_id = Column(String, ForeignKey("Users.id", ondelete = "CASCADE"), nullable = False)
+
+    owner = relationship("User")
 
 
 class User(Base):
