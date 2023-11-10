@@ -16,9 +16,20 @@ def test_posts(db: Session = Depends(get_db)):
     return {"message": db.query(models.Post).all()}
 
 @router.get('/', response_model = list[schemas.PostView])
-def get_posts(db: Session = Depends(get_db)):
+def get_posts(db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
 
     return db.query(models.Post).all()
+
+
+@router.get("/specific_posts", response_model = list[schemas.PostView])
+def get_current_user_posts(db:Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
+
+    posts = db.query(models.Post).filter(models.Post.owner_id == current_user.id).all()
+
+    if len(posts) == 0:
+        return Response(content = f"No Post Created for user {current_user.id}")
+
+    return posts
 
 
 @router.post('/', status_code = status.HTTP_201_CREATED, response_model = schemas.PostView)
