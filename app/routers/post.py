@@ -60,6 +60,10 @@ def delete_post(id:int, db: Session = Depends(get_db), current_user = Depends(oa
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND ,
                             detail = f"post with this id: {id} was not found")
 
+    if post.owner_id != current_user.id:
+        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN ,
+                            detail = f"Not Authorized to perform requested action")
+
     db.delete(post)
     db.commit()
 
@@ -68,11 +72,16 @@ def delete_post(id:int, db: Session = Depends(get_db), current_user = Depends(oa
 @router.put('/{id}', response_model = schemas.PostView)
 def update_post(id:int, post: schemas.UpdatePost, db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
 
-    post2 = db.query(models.Post).get(id)
+    post = db.query(models.Post).get(id)
 
-    if post2 is None:
+
+    if post is None:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND ,
                             detail = f"post with this id: {id} was not found")
+
+    if post.owner_id != current_user.id:
+        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN ,
+                            detail = f"Not Authorized to perform requested action")
 
     # you can put exclude here later
     db.execute(update(models.Post).where(models.Post.id == id), post.dict())

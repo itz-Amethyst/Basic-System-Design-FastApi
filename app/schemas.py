@@ -48,6 +48,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[str] = None
+    email: EmailStr
 
 
 # @dataclass
