@@ -20,6 +20,8 @@ class PostView(Post):
     # Example
     # id : int
     created_at: datetime
+    owner_id : str
+
 
     # Not necessary
     class Config:
