@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import Depends, HTTPException, status, Response, APIRouter
 from sqlalchemy import update
 from sqlalchemy.orm import Session
@@ -16,9 +18,10 @@ def test_posts(db: Session = Depends(get_db)):
     return {"message": db.query(models.Post).all()}
 
 @router.get('/', response_model = list[schemas.PostView])
-def get_posts(db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
+def get_posts(db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user), Limit: int = 10, skip: int = 0, search: Optional[str] = ""):
+    print(search)
 
-    return db.query(models.Post).all()
+    return db.query(models.Post).filter(models.Post.title.contains(search) or models.Post.content.contains(search)).limit(Limit).offset(skip).all()
 
 
 @router.get("/specific_posts", response_model = list[schemas.PostView])
