@@ -1,16 +1,7 @@
-from random import randrange
-
-import psycopg2
-import inspect
-from psycopg2.extras import RealDictCursor
-
 from fastapi import FastAPI , Response , status , HTTPException, Depends
-from fastapi.params import Body
 from models import Post
-from utils.CustomMethods import find_post , find_index_post
-import time
 from . import models
-from .database import engine, SessionLocal , get_db
+from app.db.database import engine, get_db
 from sqlalchemy.orm import Session
 
 # print(inspect.getsource(time.sleep(3)))
