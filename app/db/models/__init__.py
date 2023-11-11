@@ -1,8 +1,7 @@
 from .post import Post
 from .user import User
 from .vote import Vote
-from app.db.database import MetaData
-from sqlalchemy import MetaData
+from app.db.database import metadata, Base
 
 
 # metadata = MetaData()
@@ -12,5 +11,5 @@ from sqlalchemy import MetaData
 __all__ = [
     'Post', 'Vote', 'User',
 
-    'MetaData'
+    'metadata', 'Base',
 ]

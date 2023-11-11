@@ -3,7 +3,10 @@ from fastapi import FastAPI
 # from typing import List
 
 from .routers import post, user , auth
+from app.db.database import engine , metadata
 
+# NOTE: This should be here when you start the app it will run main.py so to create models
+metadata.create_all(bind = engine)
 
 
 # /doc => swagger

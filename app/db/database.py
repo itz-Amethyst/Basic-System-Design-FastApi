@@ -9,8 +9,8 @@ from app.shared import settings
 
 
 # SQLALCHEMY_DATABASE_URL = "postgresql://<username>:<password>@<ip-address/OR/hostname>/<database_name>"
-print(settings.POSTGRES_USERNAME)
 SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.POSTGRES_USERNAME}:%s@{settings.POSTGRES_HOSTNAME}/{settings.POSTGRES_DBNAME}" % quote_plus(settings.POSTGRES_PASSWORD)
+print(SQLALCHEMY_DATABASE_URL)
 
 
 #  connect_args={"check_same_thread": False} -> For sqlite db
@@ -21,9 +21,8 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Not sure about this
 
-print(settings.POSTGRES_USERNAME)
 metadata = MetaData()
-metadata.create_all(bind = engine)
+# metadata.create_all(bind = engine)
 
 Base = declarative_base(metadata = metadata)
 
