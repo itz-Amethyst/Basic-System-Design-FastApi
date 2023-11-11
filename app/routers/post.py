@@ -4,8 +4,10 @@ from fastapi import Depends, HTTPException, status, Response, APIRouter
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app import models , oauth2 , schemas
+from app.db.database import get_db
+from app import oauth2 , schemas
+
+from app.db.models import Post
 
 router = APIRouter(
     prefix = '/post',
@@ -15,19 +17,20 @@ router = APIRouter(
 @router.get('/sqlalchemy')
 def test_posts(db: Session = Depends(get_db)):
 
-    return {"message": db.query(models.Post).all()}
+    return {"message": db.query(Post).all()}
 
 @router.get('/', response_model = list[schemas.PostView])
 def get_posts(db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user), Limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     print(search)
 
-    return db.query(models.Post).filter(models.Post.title.contains(search) or models.Post.content.contains(search)).limit(Limit).offset(skip).all()
+    # , == or no difference
+    return db.query(Post).filter(Post.title.contains(search) , Post.content.contains(search)).limit(Limit).offset(skip).all()
 
 
 @router.get("/specific_posts", response_model = list[schemas.PostView])
 def get_current_user_posts(db:Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
 
-    posts = db.query(models.Post).filter(models.Post.owner_id == current_user.id).all()
+    posts = db.query(Post).filter(Post.owner_id == current_user.id).all()
 
     if len(posts) == 0:
         return Response(content = f"No Post Created for user {current_user.id}")
@@ -44,7 +47,7 @@ def create_Post(post: schemas.CreatePost, db: Session = Depends(get_db), current
     #! Shorter way
     #* Note: ** -> unpack
     print(current_user)
-    new_post = models.Post(owner_id = current_user.id, **post.dict())
+    new_post = Post(owner_id = current_user.id, **post.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -55,7 +58,7 @@ def create_Post(post: schemas.CreatePost, db: Session = Depends(get_db), current
 def get_post_by_id(id:int, db: Session = Depends(get_db)):
 
     # post = db.query(models.Post).filter(models.Post.title == title).first()
-    post2 = db.query(models.Post).get(id)
+    post2 = db.query(Post).get(id)
 
     if not post2:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND ,
@@ -67,7 +70,7 @@ def get_post_by_id(id:int, db: Session = Depends(get_db)):
 @router.delete('/{id}', status_code = status.HTTP_204_NO_CONTENT)
 def delete_post(id:int, db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
 
-    post = db.query(models.Post).get(id)
+    post = db.query(Post).get(id)
 
 
     if post is None:
@@ -86,7 +89,7 @@ def delete_post(id:int, db: Session = Depends(get_db), current_user = Depends(oa
 @router.put('/{id}', response_model = schemas.PostView)
 def update_post(id:int, post: schemas.UpdatePost, db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
 
-    post = db.query(models.Post).get(id)
+    post = db.query(Post).get(id)
 
 
     if post is None:
@@ -98,7 +101,7 @@ def update_post(id:int, post: schemas.UpdatePost, db: Session = Depends(get_db),
                             detail = f"Not Authorized to perform requested action")
 
     # you can put exclude here later
-    db.execute(update(models.Post).where(models.Post.id == id), post.dict())
+    db.execute(update(Post).where(Post.id == id), post.dict())
     db.commit()
 
     return post
