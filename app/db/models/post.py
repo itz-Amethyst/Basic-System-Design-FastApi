@@ -5,6 +5,7 @@ from sqlalchemy import Column , Integer , String , Boolean , TIMESTAMP , Foreign
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
 from app.db.database import Base
+from app.db.models.user import User
 
 class Post(Base):
     __tablename__ = 'Posts'
@@ -15,6 +16,6 @@ class Post(Base):
     published = Column(Boolean, nullable = False, server_default = "False")
     rating = Column(Integer, nullable = False,)
     created_at = Column(TIMESTAMP(timezone = True), nullable = False, server_default = text('now()'), default = datetime.now())
-    owner_id = Column(String, ForeignKey("Users.id", ondelete = "CASCADE"), nullable = False)
+    owner_id = Column(String, ForeignKey(User.id, ondelete = "CASCADE"), nullable = False)
 
-    owner = relationship("User")
+    owner = relationship(User)
