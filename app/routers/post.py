@@ -1,13 +1,13 @@
-from typing import Optional
+from typing import Optional , List
 
 from fastapi import Depends, HTTPException, status, Response, APIRouter
-from sqlalchemy import update
+from sqlalchemy import update , func
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app import oauth2 , schemas
 
-from app.db.models import Post
+from app.db.models import Post , Vote
 
 router = APIRouter(
     prefix = '/post',
@@ -19,18 +19,37 @@ def test_posts(db: Session = Depends(get_db)):
 
     return {"message": db.query(Post).all()}
 
-@router.get('/', response_model = list[schemas.PostView])
+# @router.get('/', response_model = list[schemas.PostView])
+@router.get('/', response_model = List[schemas.PostViewWithVotes])
 def get_posts(db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user), Limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     print(search)
 
+    # Two different query
+    results = (db.query(Post, func.count(Vote.post_id).label('votes'))
+               .join(Vote, Vote.post_id == Post.id, isouter = True)
+               .filter(Post.title.contains(search) , Post.content.contains(search))
+               .group_by(Post.id).limit(Limit).offset(skip)
+               .all())
+
     # , == or no difference
-    return db.query(Post).filter(Post.title.contains(search) , Post.content.contains(search)).limit(Limit).offset(skip).all()
+    # posts = db.query(Post).filter(Post.title.contains(search) , Post.content.contains(search)).limit(Limit).offset(skip).all()
 
+    # return list(dict(results))
 
-@router.get("/specific_posts", response_model = list[schemas.PostView])
+    return results
+
+@router.get("/specific_posts", response_model = list[schemas.PostViewWithVotes])
 def get_current_user_posts(db:Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
 
-    posts = db.query(Post).filter(Post.owner_id == current_user.id).all()
+    posts = (db.query(Post, func.count(Vote.post_id).label('votes'))
+               .join(Vote, Vote.post_id == Post.id, isouter = True)
+               .filter(Post.owner_id == current_user.id)
+                .group_by(Post.id)
+               .all())
+
+
+    # Without Votes
+    # posts = db.query(Post).filter(Post.owner_id == current_user.id).all()
 
     if len(posts) == 0:
         return Response(content = f"No Post Created for user {current_user.id}")

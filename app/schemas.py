@@ -47,6 +47,16 @@ class PostView(Post):
         from_attributes = True
 
 
+# For Join  => view
+# When ever it gets error try to makes it lowercase or restart the server
+class PostViewWithVotes(BaseModel):
+    Post: PostView
+    votes: int
+
+    class Config:
+        from_attributes = True
+        orm_mode = True
+
 
 class Vote(BaseModel):
     post_id : int
