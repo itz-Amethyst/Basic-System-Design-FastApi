@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .routers import post, user , auth , vote
 from app.db.database import engine , metadata
-from .shared import settings
+from app.shared import settings
 
 # NOTE: This should be here when you start the app it will run main.py so to create models
 #! No longer need when you have alembic
@@ -22,7 +22,8 @@ if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
         # You can use this or otherwise use * to allow all
-        allow_origins = [str(origin) for origin in settings.BACKEND_CORS_ORIGINS] ,
+        # allow_origins = [str(origin) for origin in settings.BACKEND_CORS_ORIGINS] ,
+        allow_origins = settings.BACKEND_CORS_ORIGINS,
         allow_credentials = True ,
         allow_methods = ["*"] ,
         allow_headers = ["*"] ,

@@ -2,3 +2,5 @@ venv
 secrets.json
 .env
 .idea
+.space
+Spacefile
