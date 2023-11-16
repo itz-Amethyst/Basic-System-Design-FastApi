@@ -75,6 +75,19 @@ class TokenData(BaseModel):
     id: Optional[str] = None
     email: Optional[EmailStr] = None
 
+
+
+class Orm(BaseModel):
+    title: str
+
+
+class OrmView(Orm):
+    id: int
+    created_at: datetime
+    owner_id: str
+    owner: UserView
+
+
 # @dataclass
 # class Post:
 #     title: str
