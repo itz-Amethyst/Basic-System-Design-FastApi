@@ -12,6 +12,7 @@ class UserView(BaseModel):
     id: str
     email: EmailStr
     created_at: datetime
+    image_path: str
 
 
 class UserLogin(BaseModel):
