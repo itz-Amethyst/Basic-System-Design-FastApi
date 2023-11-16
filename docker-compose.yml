@@ -2,8 +2,24 @@ version: "3"
 services:
   api:
     build: .
+    depends_on:
+      - postgres
     ports:
-      - 8000:8000
+      - "8000:8000"
 #      you can fix env like this
-#    env_file:
-#      - './.env'
+    env_file:
+      - '.env'
+
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+    env_file:
+      - '.env'
+
+volumes:
+  postgres-db:
