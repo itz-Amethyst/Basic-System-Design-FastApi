@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 # from typing import List
 
-from .routers import post, user , auth , vote , orm
+from .routers import post, user , auth , vote , orm , upload
 from app.db.database import engine , metadata
 from app.shared import settings
 
@@ -35,6 +35,8 @@ app.include_router(user.router)
 app.include_router(auth.router)
 app.include_router(vote.router)
 app.include_router(orm.router)
+app.include_router(upload.router)
+
 
 @app.get('/')
 async def root():
