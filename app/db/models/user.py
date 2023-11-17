@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column ,String , TIMESTAMP
+from sqlalchemy import Column , String , TIMESTAMP , Integer
 from sqlalchemy.sql.expression import text
 from app.db.database import Base
 from utils.CustomMethods import generate_generic_id
@@ -14,4 +14,7 @@ class User(Base):
     email = Column(String, nullable = False, unique = True)
     password = Column(String, nullable = False)
     created_at = Column(TIMESTAMP(timezone = True), nullable = False, server_default = text('now()'), default = datetime.now())
+    size = Column(Integer, nullable = False, server_default = text('0'))
+    mime = Column(String, nullable = False, server_default = 'Unknown')
+    ext = Column(String, nullable = False, server_default = 'Unknown')
     image_path = Column(String, nullable = True)
