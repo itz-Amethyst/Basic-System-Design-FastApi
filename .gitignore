@@ -4,3 +4,4 @@ secrets.json
 .idea
 .space
 Spacefile
+app/shared/errors.py
