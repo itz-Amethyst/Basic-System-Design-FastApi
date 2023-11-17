@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from typing import List , Union
 
 from pydantic import AnyHttpUrl , field_validator
@@ -15,6 +16,9 @@ print(data['BACKEND_CORS_ORIGINS'])
 #! NOTE! Remember always put .env file in outermost folder like basicsystem/.env
 class Settings(BaseSettings):
 
+    # In summary, Base_Directory is assigned the path of the parent directory two levels above the directory of the current script or module
+    Base_Directory: Path = Path(__file__).parent.parent
+
     POSTGRES_USERNAME: str = data['POSTGRES_USERNAME']
     POSTGRES_PASSWORD: str = data['POSTGRES_PASSWORD']
     POSTGRES_HOSTNAME: str = data['POSTGRES_HOSTNAME']
@@ -26,6 +30,8 @@ class Settings(BaseSettings):
 
     # BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     BACKEND_CORS_ORIGINS: str = data['BACKEND_CORS_ORIGINS']
+
+    Upload_Dir: Path = Base_Directory / 'Uploads/'
 
     # @field_validator("BACKEND_CORS_ORIGINS")
     # def assemble_cors_origins( cls , v: Union[str , List[str]] ) -> Union[List[str] , str]:
