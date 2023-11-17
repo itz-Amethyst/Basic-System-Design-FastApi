@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status, APIRouter
+from fastapi import Depends , HTTPException , status , APIRouter , UploadFile , File , Request
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -6,6 +6,8 @@ from utils.Hashes import hash_password
 from app import schemas
 
 from app.db.models import User
+from utils.AvatarUploadChunk import Upload_By_Chunk
+
 
 router = APIRouter(
     prefix = '/user',
@@ -13,8 +15,11 @@ router = APIRouter(
     tags = ['Users']
 )
 
-@router.post('/', status_code = status.HTTP_201_CREATED, response_model = schemas.UserView)
-def create_user(user:schemas.UserCreate, db: Session = Depends(get_db)):
+@router.post('/', status_code = status.HTTP_201_CREATED)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), file: UploadFile = File()):
+    # user: User = request.state
+
+    mime, path, ext, filename  = Upload_By_Chunk(file)
 
     check_user = db.query(User).filter(User.email == user.email).first()
 
@@ -23,14 +28,13 @@ def create_user(user:schemas.UserCreate, db: Session = Depends(get_db)):
 
 
     user.password = hash_password(user.password)
-
-    new_user = User(**user.dict())
+    new_user: User = User(**user.dict(), image_path = path, size = file.size, ext = ext[1:], mime = mime, filename = filename)
     print(new_user)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
 
-    return new_user
+    return {"message": "ok"}
 
 
 @router.get('/{id}', response_model = schemas.UserView)
