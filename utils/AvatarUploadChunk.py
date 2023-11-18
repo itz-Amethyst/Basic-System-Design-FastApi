@@ -5,6 +5,9 @@ import magic.magic
 
 from app.shared import settings
 from app.shared.errors import bad_file
+
+allowed_extensions = {'.jpeg', '.png', '.jpg'}
+
 def Upload_By_Chunk(file: UploadFile, flag = False):
     # 2048 idk
     # Maybe need a debug here
@@ -18,6 +21,10 @@ def Upload_By_Chunk(file: UploadFile, flag = False):
     # f.e.g .rb .rs files like this will throw an error
     if ext is None or len(ext) < 2:
         raise bad_file
+
+    #! Only allowed files
+    # if ext is None or ext.lower() not in allowed_extensions:
+    #     raise bad_file
 
     # if file was greater than 40mb
     if file.size > 40 * 1024 * 1024:
