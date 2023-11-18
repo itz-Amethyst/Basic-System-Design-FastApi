@@ -1,11 +1,11 @@
 import mimetypes
 from secrets import token_hex
 from fastapi import UploadFile
-import magic
+import magic.magic
 
 from app.shared import settings
 from app.shared.errors import bad_file
-def Upload_By_Chunk(file: UploadFile):
+def Upload_By_Chunk(file: UploadFile, flag = False):
     # 2048 idk
     # Maybe need a debug here
     mime = magic.magic.from_buffer(file.file.read(2048), mime = True)
@@ -28,11 +28,16 @@ def Upload_By_Chunk(file: UploadFile):
     filename = file.filename.split('.').pop(-2) # it will only get name of file
     file_name_pattern = token_hex(5)
 
-    path = settings.Upload_Dir / (file_name_pattern + filename + ext)
+    upload_dir = settings.Upload_Dir / "UserAvatars"
+    upload_dir.mkdir(parents = True, exist_ok = True)
+
+    path = upload_dir / (file_name_pattern + filename + ext)
 
     with open(path, 'wb') as f:
         while chunk := file.file.read():
             f.write(chunk)
 
+    if flag is True:
+        return {"success": True , "file_path": path , 'message': "File Uploaded successfully" , 'size': file.size}
 
     return mime, path , ext , filename

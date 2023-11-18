@@ -16,8 +16,8 @@ print(data['BACKEND_CORS_ORIGINS'])
 #! NOTE! Remember always put .env file in outermost folder like basicsystem/.env
 class Settings(BaseSettings):
 
-    # In summary, Base_Directory is assigned the path of the parent directory two levels above the directory of the current script or module
-    Base_Directory: Path = Path(__file__).parent.parent
+    # In summary, Base_Directory is assigned the path of the parent directory 3 levels above the directory of the current script or module
+    Base_Directory: Path = Path(__file__).parent.parent.parent
 
     POSTGRES_USERNAME: str = data['POSTGRES_USERNAME']
     POSTGRES_PASSWORD: str = data['POSTGRES_PASSWORD']
