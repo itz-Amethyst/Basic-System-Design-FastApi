@@ -18,6 +18,7 @@ from app.shared import settings
 # Theme: obsidian
 app = FastAPI(swagger_ui_parameters = {"syntaxHighlight.theme": "nord"})
 
+
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
@@ -36,6 +37,8 @@ app.include_router(auth.router)
 app.include_router(vote.router)
 app.include_router(orm.router)
 app.include_router(upload.router)
+
+#! Never ever use fastapi-crudrouter not available in sqlalchemy Base Version
 
 
 @app.get('/')
