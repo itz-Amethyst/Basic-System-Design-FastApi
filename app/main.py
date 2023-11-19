@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 # from typing import List
 
+import importlib
+
 from .routers import post, user , auth , vote , orm , upload
 from app.db.database import engine , metadata
 from app.shared import settings
@@ -19,6 +21,10 @@ from utils.RateLimiter import rate_limited
 # Link: https://fastapi.tiangolo.com/how-to/configure-swagger-ui/
 # Theme: obsidian
 app = FastAPI(swagger_ui_parameters = {"syntaxHighlight.theme": "nord"})
+
+
+#? Admin: https://github.com/fastapi-admin/fastapi-admin this one only works with tortoise orm only
+# ? Admin: More like a django admin default https://piccolo-admin.readthedocs.io/en/latest/installation/index.html
 
 
 if settings.BACKEND_CORS_ORIGINS:
@@ -41,6 +47,12 @@ app.include_router(orm.router)
 app.include_router(upload.router)
 
 #! Never ever use fastapi-crudrouter not available in sqlalchemy Base Version
+
+@app.on_event('startup')
+def startup():
+    admin_module = importlib.import_module('app.admin')
+    admin_module.admin.mount_to(app)
+
 
 
 @app.get('/')
