@@ -48,10 +48,19 @@ app.include_router(upload.router)
 
 #! Never ever use fastapi-crudrouter not available in sqlalchemy Base Version
 
+
+
+# V1
 @app.on_event('startup')
 def startup():
     admin_module = importlib.import_module('app.admin')
     admin_module.admin.mount_to(app)
+
+
+# V2
+@app.on_event('startup')
+def startup():
+    admin_module = importlib.import_module('app.sqladmin')
 
 
 
