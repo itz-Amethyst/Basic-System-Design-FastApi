@@ -1,12 +1,13 @@
+from starlette.middleware import Middleware
+from starlette.middleware.sessions import SessionMiddleware
 from starlette_admin import CustomView
 from starlette_admin.contrib.sqla import Admin, ModelView
 from starlette_admin.views import Link , DropDown
 
 from app.db.models import User , Parent
 from app.db.database import engine
-from app.oauth2 import get_current_user
-from fastapi import Depends
 from starlette_admin._types import RowActionsDisplayType
+from app.AdminV2.AuthProvider import Auth_Admin_Provider
 
 # https://jowilf.github.io/starlette-admin/
 
@@ -35,6 +36,8 @@ admin = Admin(engine,
               base_url = "/admin2",
               logo_url = "`https`://preview.tabler.io/static/logo-white.svg" ,
               login_logo_url = "`https`://preview.tabler.io/static/logo.svg" ,
+              auth_provider = Auth_Admin_Provider(),
+              middlewares = [Middleware(SessionMiddleware, secret_key = '1234')]
               )
 
 
