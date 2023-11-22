@@ -5,13 +5,18 @@ from sqladmin import Admin, ModelView
 from app.main import app
 from app.db.database import engine
 from app.db.models import User , Parent
+from app.Admin_SQLAlchemy.AdminAuth import AdminAuth
 
-admin = Admin(app, engine)
+logo_url = "https://cdn.discordapp.com/attachments/921633563810627588/1175350979202400267/image.png?ex=656ae9e6&is=655874e6&hm=002a637e7bcbf71940f99b778a16e15f6d7487ddd05d11be3020bf04eebae2e0&"
+
+
+
+admin = Admin(app , engine , title = 'SQLADMIN BASHE ?!' , logo_url = logo_url , authentication_backend = AdminAuth(secret_key = 'Test'))
 
 
 class UserAdmin(ModelView, model=User):
-    page_size = 2
-    page_size_options = [2 , 4 , 6 , 8 , 10]
+    page_size = 5
+    page_size_options = [3 , 5 , 7 , 9 , 11]
 
     column_list = "__all__"
     #! Note: First need to be just exclude one and you can define 1 row to be excluded and it will show rest
@@ -23,6 +28,9 @@ class UserAdmin(ModelView, model=User):
 
     column_sortable_list = [User.email, User.id, User.created_at, User.created_at]
     column_searchable_list = [User.email, User.id]
+
+    # Default sorting
+    column_default_sort = ("created_at", True)
 
     #! can use to short description in blog part like to show only first 10 letter or whatever
     # column_formatters = {User.email: lambda m , a: m.email[:10]}
