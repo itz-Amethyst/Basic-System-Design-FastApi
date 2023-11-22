@@ -16,7 +16,7 @@ class AdminConfig:
     is_authenticated: bool = False
 
 
-#! -----------------------> Very very bullshit login system <-------------------------
+#! -----------------------> Very very bullshit login system BUT IT"S OK : ) <-------------------------
 
 class Auth_Admin_Provider(AuthProvider):
     """

@@ -7,7 +7,7 @@ from starlette_admin.views import Link , DropDown
 from app.db.models import User , Parent
 from app.db.database import engine
 from starlette_admin._types import RowActionsDisplayType
-from app.AdminV2.AuthProvider import Auth_Admin_Provider
+from app.AdminV1.AuthProvider import Auth_Admin_Provider
 
 # https://jowilf.github.io/starlette-admin/
 
