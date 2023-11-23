@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     POSTGRES_HOSTNAME: str = data['POSTGRES_HOSTNAME']
     POSTGRES_DBNAME: str = data['POSTGRES_DBNAME']
 
+    DEBUG: bool = data['DEBUG']
+
     SECRET_KEY: str = data['SECRET_KEY']
     ALGORITHM: str = data['ALGORITHM']
     ACCESS_TOKEN_EXPIRE_MINUTES: int = data['ACCESS_TOKEN_EXPIRE_MINUTES']
