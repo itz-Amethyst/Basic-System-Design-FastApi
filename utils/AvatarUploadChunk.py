@@ -1,6 +1,9 @@
 import mimetypes
+import os
 from secrets import token_hex
-from fastapi import UploadFile
+from typing import Optional
+
+from fastapi import UploadFile ,Request
 import magic.magic
 
 from app.shared import settings
@@ -8,7 +11,7 @@ from app.shared.errors import bad_file
 
 allowed_extensions = {'.jpeg', '.png', '.jpg'}
 
-def Upload_By_Chunk(file: UploadFile, flag = False):
+def Upload_By_Chunk(request: Optional[Request], file: UploadFile, flag = False):
     # 2048 idk
     # Maybe need a debug here
     mime = magic.magic.from_buffer(file.file.read(2048), mime = True)
@@ -44,7 +47,12 @@ def Upload_By_Chunk(file: UploadFile, flag = False):
         while chunk := file.file.read():
             f.write(chunk)
 
+    simple_path = os.path.join(upload_dir.name , path.name)
+
+    if settings.DEBUG is True:
+        image_path = os.path.join(str(request.base_url) , simple_path).replace('\\', '/')
+
     if flag is True:
         return {"success": True , "file_path": path , 'message': "File Uploaded successfully" , 'size': file.size}
 
-    return mime, path , ext , filename
+    return (mime, image_path , ext , filename) if settings.DEBUG is True else (mime, path , ext , filename)
