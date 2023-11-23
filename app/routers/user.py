@@ -1,7 +1,9 @@
-from fastapi import Depends , HTTPException , status , APIRouter , UploadFile , File , Request
+from fastapi import Depends , HTTPException , status , APIRouter , UploadFile , File , Request , Form
+from pydantic import SecretStr , EmailStr
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
+from app.shared import settings
 from utils.Hashes import hash_password
 from app import schemas
 
@@ -15,26 +17,43 @@ router = APIRouter(
     tags = ['Users']
 )
 
-@router.post('/', status_code = status.HTTP_201_CREATED)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), file: UploadFile = File()):
-    # user: User = request.state
+@router.post('/', status_code = status.HTTP_201_CREATED, response_model = schemas.UserView)
+def create_user(request: Request, email: EmailStr = Form(),
+    password: SecretStr = Form(),
+    # is_superuser: bool = Form(),
+    terms_of_service_accepted: bool = Form(),
+    profile_picture: UploadFile = File(...) , db: Session = Depends(get_db)):
 
-    mime, path, ext, filename  = Upload_By_Chunk(file)
 
-    check_user = db.query(User).filter(User.email == user.email).first()
+    # user = schemas.UserCreate(email = email,password = password,terms_of_service_accepted = terms_of_service_accepted,profile_picture = profile_picture)
+
+
+    # user_data = jsonable_encoder(user_data)
+
+    # Todo: Fix this later by adding default image
+    if profile_picture is None:
+        raise HTTPException(status_code = status.HTTP_411_LENGTH_REQUIRED, detail = "Please provide a profile picture")
+
+    mime, image_path, ext, filename  = Upload_By_Chunk(request, profile_picture)
+
+    check_user = db.query(User).filter(User.email == email).first()
 
     if check_user:
-        raise HTTPException(status_code = status.HTTP_409_CONFLICT, detail = f"User with this email {user.email} already exists")
+        raise HTTPException(status_code = status.HTTP_409_CONFLICT, detail = f"User with this email {email} already exists")
 
 
-    user.password = hash_password(user.password)
-    new_user: User = User(**user.dict(), image_path = path, size = file.size, ext = ext[1:], mime = mime, filename = filename)
+    password = hash_password(password.get_secret_value())
+
+    # user_data = user.dict(exclude_none = True, exclude_unset = True)
+
+
+    new_user: User = User(email = email, password = password, image_path = image_path, size = profile_picture.size, ext = ext[1:], mime = mime)
     print(new_user)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
 
-    return {"message": "ok"}
+    return new_user
 
 
 @router.get('/{id}', response_model = schemas.UserView)
