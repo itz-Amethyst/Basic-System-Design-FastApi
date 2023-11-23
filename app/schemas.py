@@ -1,23 +1,32 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel , EmailStr , conint
-
-
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
-
-
-class UserView(BaseModel):
-    id: str
-    email: EmailStr
-    created_at: datetime
-    image_path: str
+from pydantic import BaseModel , EmailStr , conint , SecretStr, Field
 
 
 class UserLogin(BaseModel):
     email: EmailStr
-    password: str
+    password: SecretStr
+
+
+class UserUpdate(UserLogin):
+
+    # you can put these in create option and inherit from them
+    is_active : Optional[bool] = True
+    is_superUser : Optional[bool] = False
+
+
+#! Custom Way view
+class UserView(BaseModel):
+    id: str
+    email: EmailStr
+    password: SecretStr
+    created_at: datetime
+    image_path: str
+    size: int
+    ext: str
+    mime: str
+    image_path: Optional[str] = None
+    terms_of_service: Optional[bool] = Field(default = False)
 
 
 class Post(BaseModel):
