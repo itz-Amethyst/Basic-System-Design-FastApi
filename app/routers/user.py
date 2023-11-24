@@ -25,10 +25,9 @@ def create_user(request: Request, email: EmailStr = Form(),
     profile_picture: UploadFile = File(...) , db: Session = Depends(get_db)):
 
 
-    # user = schemas.UserCreate(email = email,password = password,terms_of_service_accepted = terms_of_service_accepted,profile_picture = profile_picture)
+    if terms_of_service_accepted is False:
+        raise HTTPException(status_code = status.HTTP_406_NOT_ACCEPTABLE, detail = "You must agree terms of services")
 
-
-    # user_data = jsonable_encoder(user_data)
 
     # Todo: Fix this later by adding default image
     if profile_picture is None:
@@ -44,11 +43,8 @@ def create_user(request: Request, email: EmailStr = Form(),
 
     password = hash_password(password.get_secret_value())
 
-    # user_data = user.dict(exclude_none = True, exclude_unset = True)
-
 
     new_user: User = User(email = email, password = password, image_path = image_path, size = profile_picture.size, ext = ext[1:], mime = mime)
-    print(new_user)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)

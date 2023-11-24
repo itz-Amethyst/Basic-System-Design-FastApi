@@ -89,6 +89,7 @@ class TokenData(BaseModel):
 
 class Orm(BaseModel):
     title: str
+    category: str
 
 
 class OrmView(Orm):
