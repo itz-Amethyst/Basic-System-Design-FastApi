@@ -50,7 +50,7 @@ app.include_router(upload.router)
 
 
 
-#* Note: Don't activate both of them in same time
+#* Note: Conflict when activate both of them in same time
 # V1
 @app.on_event('startup')
 def startup():

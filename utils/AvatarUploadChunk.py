@@ -26,8 +26,8 @@ def Upload_By_Chunk(request: Optional[Request], file: UploadFile, flag = False):
         raise bad_file
 
     #! Only allowed files
-    # if ext is None or ext.lower() not in allowed_extensions:
-    #     raise bad_file
+    if ext is None or ext.lower() not in allowed_extensions:
+        raise bad_file
 
     # if file was greater than 40mb
     if file.size > 40 * 1024 * 1024:
