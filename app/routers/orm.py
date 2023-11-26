@@ -5,7 +5,8 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app import schemas , oauth2, oauth2bearer
+from app import schemas
+from app.security import oauth2bearer
 
 from app.db.models import Parent
 
@@ -26,9 +27,9 @@ def create_table(data:schemas.Orm, db: Session = Depends(get_db)):
     create_table_query = f"""CREATE TABLE {data.title} (id SERIAL PRIMARY KEY);"""
     db.execute(text(create_table_query))
 
-    insert_parent = ("""INSERT INTO "Parents" (title,owner_id) VALUES (:title, :owner_id, :category);""")
+    insert_parent = ("""INSERT INTO "Parents" (title,owner_id) VALUES (:title, :owner_id, :Status);""")
 
-    db.execute(text(insert_parent), {"title": data.title, "owner_id": "24", "category": data.category})
+    db.execute(text(insert_parent), {"title": data.title, "owner_id": "24", "category": data.status})
 
     db.commit()
 
@@ -39,7 +40,8 @@ def create_table(data:schemas.Orm, db: Session = Depends(get_db)):
 
 
 # You can use both option to check dependencies
-@router.get('/', status_code = status.HTTP_201_CREATED, response_model = List[schemas.OrmView], dependencies = [Depends(oauth2bearer.oauth2_schema_bearer)])
+@router.get('/', status_code = status.HTTP_201_CREATED, response_model = List[schemas.OrmView], dependencies = [Depends(
+    oauth2bearer.oauth2_schema_bearer)])
 def get_tables(db:Session = Depends(get_db)):
 
     tables = db.query(Parent).all()
