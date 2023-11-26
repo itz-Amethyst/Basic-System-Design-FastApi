@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel , EmailStr , conint , SecretStr, Field
+from app.db.models.parent import StatusOptions
 
 
 class UserLogin(BaseModel):
@@ -89,7 +90,7 @@ class TokenData(BaseModel):
 
 class Orm(BaseModel):
     title: str
-    category: str
+    status: StatusOptions
 
 
 class OrmView(Orm):

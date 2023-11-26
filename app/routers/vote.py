@@ -1,7 +1,8 @@
 from fastapi import APIRouter , status , Depends , HTTPException
 from sqlalchemy.orm import Session
 
-from app import schemas , oauth2
+from app import schemas
+from app.security import oauth2
 from app.db.database import get_db
 
 from app.db.models import Vote , Post
@@ -13,7 +14,8 @@ router = APIRouter(
 
 
 @router.post('/', status_code = status.HTTP_201_CREATED)
-def vote(vote: schemas.Vote , db : Session = Depends(get_db) , current_user: schemas.TokenData = Depends(oauth2.get_current_user) ):
+def vote( vote: schemas.Vote , db : Session = Depends(get_db) , current_user: schemas.TokenData = Depends(
+    oauth2.get_current_user) ):
 
     found_vote: Vote = db.query(Vote).filter(Vote.post_id == vote.post_id , Vote.user_id == current_user.id).first()
 
