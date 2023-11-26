@@ -1,6 +1,5 @@
 from typing import Optional
-import jwt
-from fastapi import Depends
+from jose import jwt , JWTError
 from jose.constants import ALGORITHMS
 
 from fastapi.security import HTTPBearer , HTTPAuthorizationCredentials
@@ -8,8 +7,9 @@ from sqlalchemy.orm import Session
 from starlette.requests import Request
 
 from app.db.database import get_db
-from app.db.models import User
 from app.shared import settings , errors
+
+from app.security.TokenOperation import create_access_token, verify_access_token
 
 
 # Next should be added whenever you want to access db outside api
@@ -24,14 +24,15 @@ class CustomHTTPBearer(HTTPBearer):
         try:
             payload = jwt.decode(res.credentials, settings.SECRET_KEY, algorithms = [ALGORITHMS.HS256])
 
-            user =  db.query(User).where(User.id == payload['sub'])
-            request.state.user = user
-            return payload
+            encoded_jwt = create_access_token(payload)
 
-        except jwt.ExpiredSignatureError:
-            raise errors.credentials_exception
+            result = verify_access_token(encoded_jwt, credentials_exception = errors.credentials_exception)
 
-        except jwt.InvalidTokenError:
+            print(result)
+
+            return result
+
+        except JWTError:
             raise errors.credentials_exception
 
 
