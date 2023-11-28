@@ -27,10 +27,12 @@ def verify_access_token(token: str, credentials_exception):
 
         user_email = payload.get("user_email")
 
+        role = payload.get("role")
+
         if user_id is None:
             raise credentials_exception
 
-        token_data = schemas.TokenData(id = user_id, email = user_email)
+        token_data = schemas.TokenData(id = user_id, email = user_email, role = role)
 
     except JWTError:
         raise credentials_exception
