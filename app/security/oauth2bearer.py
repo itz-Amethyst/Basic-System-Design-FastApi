@@ -28,6 +28,8 @@ class CustomHTTPBearer(HTTPBearer):
 
             result = verify_access_token(encoded_jwt, credentials_exception = errors.credentials_exception)
 
+            request.state.user = result
+
             print(result)
 
             return result

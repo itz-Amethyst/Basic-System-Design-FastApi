@@ -10,6 +10,8 @@ from app.security import oauth2bearer
 
 from app.db.models import Parent
 
+from app.security.PermissionChecker import is_admin
+
 router = APIRouter(
     prefix = '/orm',
     # You can add multiple tags
@@ -40,8 +42,7 @@ def create_table(data:schemas.Orm, db: Session = Depends(get_db)):
 
 
 # You can use both option to check dependencies
-@router.get('/', status_code = status.HTTP_201_CREATED, response_model = List[schemas.OrmView], dependencies = [Depends(
-    oauth2bearer.oauth2_schema_bearer)])
+@router.get('/', status_code = status.HTTP_201_CREATED, response_model = List[schemas.OrmView], dependencies = [Depends(oauth2bearer.oauth2_schema_bearer), Depends(is_admin)])
 def get_tables(db:Session = Depends(get_db)):
 
     tables = db.query(Parent).all()
