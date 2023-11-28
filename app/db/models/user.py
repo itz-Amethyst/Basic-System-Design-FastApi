@@ -1,9 +1,15 @@
+import enum
 from datetime import datetime
 
-from sqlalchemy import Column , String , TIMESTAMP , Integer
+from sqlalchemy import Column , String , TIMESTAMP , Integer , Enum
 from sqlalchemy.sql.expression import text
 from app.db.database import Base
 from utils.CustomMethods import generate_generic_id
+
+class RoleOptions(enum.Enum):
+    super_admin = "super admin"
+    admin = "admin"
+    user = "user"
 
 
 class User(Base):
@@ -18,3 +24,6 @@ class User(Base):
     mime = Column(String, nullable = False, server_default = 'Unknown')
     ext = Column(String, nullable = False, server_default = 'Unknown')
     image_path = Column(String, nullable = True)
+
+    role = Column(Enum(RoleOptions), nullable = False, server_default = RoleOptions.user.value)
+
