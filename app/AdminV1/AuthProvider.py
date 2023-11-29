@@ -19,10 +19,6 @@ class AdminConfig:
 #! -----------------------> Very very bullshit login system BUT IT"S OK : ) <-------------------------
 
 class Auth_Admin_Provider(AuthProvider):
-    """
-        This is for demo purpose, it's not a better
-        way to save and validate user credentials
-        """
 
     async def login(
             self ,
