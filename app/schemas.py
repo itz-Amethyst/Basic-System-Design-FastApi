@@ -1,5 +1,7 @@
 from datetime import datetime
 from typing import Optional
+
+from fastapi import UploadFile , File
 from pydantic import BaseModel , EmailStr , conint , SecretStr, Field
 from app.db.models.parent import StatusOptions
 
@@ -7,6 +9,10 @@ from app.db.models.parent import StatusOptions
 class UserLogin(BaseModel):
     email: EmailStr
     password: SecretStr
+
+class UserRegister(UserLogin):
+    terms_of_service_accepted: Optional[bool] = False
+    profile_picture: UploadFile = File(...)
 
 
 class UserUpdate(UserLogin):
