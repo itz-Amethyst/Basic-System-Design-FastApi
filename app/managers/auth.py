@@ -1,4 +1,7 @@
 from datetime import datetime , timedelta
+
+from fastapi import Depends
+
 from app import schemas
 from typing import Optional
 from jose import jwt , JWTError
@@ -7,6 +10,9 @@ from fastapi.security import HTTPBearer , HTTPAuthorizationCredentials
 from starlette.requests import Request
 from app.shared import settings , errors
 
+from fastapi.security import OAuth2PasswordBearer
+
+oauth2_password = OAuth2PasswordBearer(tokenUrl = 'login')
 
 class AuthManager:
     @staticmethod
@@ -46,8 +52,14 @@ class AuthManager:
 
         return token_data
 
+    # Check if user is logged in
+    @staticmethod
+    def get_current_user(token: str = Depends(oauth2_password)):
 
-class CustomHTTPBearer(HTTPBearer):
+        return AuthManager.verify_access_token(token , errors.credentials_exception)
+
+
+class CustomHTTPBearerOauth2(HTTPBearer):
     async def __call__(
             self , request: Request
     ) -> Optional[HTTPAuthorizationCredentials]:
@@ -68,3 +80,5 @@ class CustomHTTPBearer(HTTPBearer):
 
         except JWTError:
             raise errors.credentials_exception
+
+oauth2_bearer_schema = CustomHTTPBearerOauth2()
