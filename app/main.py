@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-# from typing import List
 
 import importlib
+
+from starlette.middleware.sessions import SessionMiddleware
 
 from .routers import post, user , auth , vote , orm , upload
 from app.db.database import engine , metadata
@@ -21,6 +22,7 @@ from utils.RateLimiter import rate_limited
 # Link: https://fastapi.tiangolo.com/how-to/configure-swagger-ui/
 # Theme: obsidian
 app = FastAPI(swagger_ui_parameters = {"syntaxHighlight.theme": "nord"})
+app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
 
 
 #? Admin: https://github.com/fastapi-admin/fastapi-admin this one only works with tortoise orm only
