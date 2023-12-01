@@ -4,6 +4,7 @@ from typing import Optional
 from fastapi import UploadFile , File
 from pydantic import BaseModel , EmailStr , conint , SecretStr, Field
 from app.db.models.parent import StatusOptions
+from app.db.models.user import RoleOptions
 
 
 class UserLogin(BaseModel):
@@ -28,6 +29,7 @@ class UserView(BaseModel):
     email: EmailStr
     password: SecretStr
     created_at: datetime
+    role: RoleOptions
     image_path: str
     size: int
     ext: str

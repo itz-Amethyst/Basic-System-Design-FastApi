@@ -7,7 +7,8 @@ from app.db.database import Base
 from utils.CustomMethods import generate_generic_id
 
 class RoleOptions(enum.Enum):
-    super_admin = "super admin"
+    # there is a custom method in util that replace space with underline
+    super_admin = "super_admin"
     admin = "admin"
     user = "user"
 

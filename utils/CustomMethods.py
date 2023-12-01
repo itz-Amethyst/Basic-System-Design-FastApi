@@ -19,3 +19,6 @@ def generate_generic_id():
     random_chars = random.choices(letters + numbers , k = 12)
     random_string = ''.join(random_chars)
     return f"XOM-{random_string}"
+
+def space_to_underscore(input_string):
+    return input_string.replace(" ", "_")
