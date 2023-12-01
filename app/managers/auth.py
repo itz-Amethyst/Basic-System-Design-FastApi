@@ -8,7 +8,7 @@ from jose import jwt , JWTError
 from jose.constants import ALGORITHMS
 from fastapi.security import HTTPBearer , HTTPAuthorizationCredentials
 
-from app.managers import PermissionManager
+from app.managers.permission import PermissionManager
 from app.shared import settings , errors
 
 from fastapi.security import OAuth2PasswordBearer
