@@ -3,7 +3,8 @@ from pydantic import SecretStr , EmailStr
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.managers import UserManager
+from app.db.models.user import RoleOptions
+from app.managers import UserManager , PermissionManager , AuthManager
 from app import schemas
 
 from app.db.models import User
@@ -48,3 +49,9 @@ def get_user(id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = f"User with this id {id} does not exists")
 
     return user
+
+# Note Careful about dependency order check is user logged in must be at first position
+@router.post('/{id}', response_model = schemas.UserView, dependencies = [ Depends(AuthManager.get_current_user) ,Depends(PermissionManager.is_admin)])
+def change_role(id:str, role: RoleOptions):
+
+    return UserManager.ChangeRole(user_id = id, role = role)
