@@ -1,13 +1,14 @@
 from datetime import datetime , timedelta
 
-from fastapi import Depends
+from fastapi import Depends, Request
 
 from app import schemas
 from typing import Optional
 from jose import jwt , JWTError
 from jose.constants import ALGORITHMS
 from fastapi.security import HTTPBearer , HTTPAuthorizationCredentials
-from starlette.requests import Request
+
+from app.managers import PermissionManager
 from app.shared import settings , errors
 
 from fastapi.security import OAuth2PasswordBearer
@@ -36,9 +37,9 @@ class AuthManager:
         try:
             payload = jwt.decode(token , settings.SECRET_KEY , algorithms = [settings.ALGORITHM])
 
-            user_id = payload.get("user_id")
+            user_id = payload.get("id")
 
-            user_email = payload.get("user_email")
+            user_email = payload.get("email")
 
             role = payload.get("role")
 
@@ -72,7 +73,7 @@ class CustomHTTPBearerOauth2(HTTPBearer):
 
             result = AuthManager.verify_access_token(encoded_jwt, credentials_exception = errors.credentials_exception)
 
-            request.state.user = result
+            result = PermissionManager.set_session_user(request = request , self = result)
 
             print(result)
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 
 from app.managers.user import UserManager
@@ -9,6 +9,6 @@ router = APIRouter(
 )
 
 @router.post("/login", response_model = schemas.Token)
-def login( user_credentials: OAuth2PasswordRequestForm = Depends()):
+def login(request: Request, user_credentials: OAuth2PasswordRequestForm = Depends()):
 
-    return UserManager.login(user_credentials)
+    return UserManager.login(user_credentials, request)
