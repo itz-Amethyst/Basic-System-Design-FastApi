@@ -35,6 +35,15 @@ class Settings(BaseSettings):
 
     Upload_Dir: Path = Base_Directory / 'Uploads/'
 
+    # boto Service
+    PUBLIC_BUCKET_NAME: str = data['PUBLIC_BUCKET_NAME']
+    LOCAL_DIR: str = data['LOCAL_DIR']
+    WEEK_IN_SECONDS: int = data['WEEK_IN_SECONDS']
+
+    ENDPOINT_URL_BUCKET: str = data['ENDPOINT_URL_BUCKET']
+    KEY_ID_YOUR_ACCOUNT: str = data['KEY_ID_YOUR_ACCOUNT']
+    APPLICATION_KEY_YOUR_ACCOUNT: str = data['APPLICATION_KEY_YOUR_ACCOUNT']
+
     # @field_validator("BACKEND_CORS_ORIGINS")
     # def assemble_cors_origins( cls , v: Union[str , List[str]] ) -> Union[List[str] , str]:
     #     if isinstance(v , str) and not v.startswith("["):
