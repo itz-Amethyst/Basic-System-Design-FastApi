@@ -100,12 +100,11 @@ def get_b2_resource(endpoint, key_id, application_key):
 
 # Upload specified file into the specified bucket
 def upload_file(bucket, directory, file, b2, b2path=None):
-    file_path = os.path.join(directory, file)
     remote_path = b2path
     if remote_path is None:
         remote_path = file
     try:
-        response = b2.Bucket(bucket).upload_file(file_path, remote_path)
+        response = b2.Bucket(bucket).upload_file(directory, remote_path)
     except ClientError as ce:
         print('error', ce)
 
