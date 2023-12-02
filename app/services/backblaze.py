@@ -1,9 +1,7 @@
-import os.path
-
 import boto3
 from botocore.exceptions import ClientError
 from botocore.config import Config
-
+from fastapi import HTTPException , status
 
 
 # Create the specified bucket on B2
@@ -106,6 +104,5 @@ def upload_file(bucket, directory, file, b2, b2path=None):
     try:
         response = b2.Bucket(bucket).upload_file(directory, remote_path)
     except ClientError as ce:
-        print('error', ce)
+        raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = f"Server is not available for now , {ce}")
 
-    return response
