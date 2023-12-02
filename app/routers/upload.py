@@ -1,19 +1,18 @@
 from fastapi import  APIRouter , UploadFile , File , status
+from starlette.requests import Request
 
 from app.managers.upload import UploadManager
-# from utils.AvatarUpload import Upload_Avatar
-from utils.AvatarUploadChunk import Upload_By_Chunk
 
 router = APIRouter(
     prefix = '/upload',
     tags = ['Upload']
 )
 @router.post('/', status_code = status.HTTP_201_CREATED)
-def upload_file(file: UploadFile = File(..., description='Provide an avatar', media_type=['image/jpeg', 'image/png'])):
+def upload_file(request: Request, file: UploadFile = File(..., description='Provide an avatar', media_type=['image/jpeg', 'image/png'])):
 
-    # result = Upload_By_Chunk(file, flag = True)
+    # result = Upload_By_Chunk(request = request, file = file, flag = True)
 
-    result = UploadManager.upload_to_service(file = file)
+    result = UploadManager.upload_image(request = request, file = file , flag = True)
 
 
     return result
