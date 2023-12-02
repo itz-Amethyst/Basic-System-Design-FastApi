@@ -1,19 +1,15 @@
+import mimetypes
 import os
+from secrets import token_hex
 
+import magic.magic
 from fastapi import UploadFile , File
 from starlette.requests import Request
 
 from app.services.backblaze import get_b2_resource , upload_file , list_objects_browsable_url
 from app.shared import settings
-from utils.file_operation import read_write_file , write_by_base64
-import mimetypes
-import os
-from secrets import token_hex
-import magic.magic
-
-from app.shared import settings
 from app.shared.errors import bad_file
-
+from utils.file_operation import read_write_file
 
 allowed_extensions = {'.jpeg', '.png', '.jpg'}
 b2_rw = get_b2_resource(settings.ENDPOINT_URL_BUCKET, settings.KEY_ID_YOUR_ACCOUNT, settings.APPLICATION_KEY_YOUR_ACCOUNT)
@@ -22,7 +18,6 @@ class UploadManager:
 
     @staticmethod
     def upload_image(request: Request, flag: bool = False, file: UploadFile = File(...) ):
-
 
         mime = magic.magic.from_buffer(file.file.read(2048) , mime = True)
 
@@ -64,21 +59,13 @@ class UploadManager:
             path = os.path.join(settings.Upload_Dir_temp_for_service , file_name_pattern + file.filename)
 
             read_write_file(path , file = file)
-            # await write_by_base64(path, file = file)
-
 
             upload_file(settings.PUBLIC_BUCKET_NAME , path , file.filename , b2)
 
             image_path = f"https://{settings.PUBLIC_BUCKET_NAME}.{settings.ENDPOINT_URL_BUCKET.replace('https://','')}/{file.filename}"
 
-            # os.remove(path)
-
-        # print('RESPONSE:  ' , response)
-
-        # return response
-
-        # generate_friendly_url(NEW_BUCKET_NAME , endpoint , b2)
-
+            # Remove the file in temp for better performances
+            os.remove(path)
 
 
         if flag is True:
