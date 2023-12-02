@@ -35,6 +35,9 @@ class Settings(BaseSettings):
 
     Upload_Dir: Path = Base_Directory / 'Uploads/'
 
+    Upload_Dir_temp_for_service: Path = Base_Directory / 'temp/'
+
+
     # boto Service
     PUBLIC_BUCKET_NAME: str = data['PUBLIC_BUCKET_NAME']
     LOCAL_DIR: str = data['LOCAL_DIR']

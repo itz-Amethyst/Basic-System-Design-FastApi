@@ -69,6 +69,7 @@ class UploadManager:
 
             upload_file(settings.PUBLIC_BUCKET_NAME , path , file.filename , b2)
 
+            image_path = f"https://{settings.PUBLIC_BUCKET_NAME}.{settings.ENDPOINT_URL_BUCKET.replace('https://','')}/{file.filename}"
 
             # os.remove(path)
 
