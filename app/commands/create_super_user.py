@@ -9,7 +9,7 @@ from app.managers.user import UserManager
 #! Need to work on it
 @click.command()
 @click.option("-e", "--email", type=str, required = True)
-@click.option("-p", "--password", type=EmailStr, required = True)
+@click.option("-p", "--password", type=str, required = True)
 @click.option("-r", "--role", type=RoleOptions, required = True)
 async def create_user(email: EmailStr, password: str, role: RoleOptions):
 

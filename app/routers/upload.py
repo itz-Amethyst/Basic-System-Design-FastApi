@@ -1,5 +1,6 @@
 from fastapi import  APIRouter , UploadFile , File , status
 
+from app.managers.upload import UploadManager
 # from utils.AvatarUpload import Upload_Avatar
 from utils.AvatarUploadChunk import Upload_By_Chunk
 
@@ -9,6 +10,10 @@ router = APIRouter(
 )
 @router.post('/', status_code = status.HTTP_201_CREATED)
 def upload_file(file: UploadFile = File(..., description='Provide an avatar', media_type=['image/jpeg', 'image/png'])):
-    result = Upload_By_Chunk(file, flag = True)
+
+    # result = Upload_By_Chunk(file, flag = True)
+
+    result = UploadManager.upload_to_service(file = file)
+
 
     return result
