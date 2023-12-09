@@ -5,6 +5,7 @@ from typing import List , Union
 from pydantic import AnyHttpUrl , field_validator
 from pydantic_settings import BaseSettings , SettingsConfigDict
 from dotenv import load_dotenv
+from redis import Redis
 
 # load_dotenv(dotenv_path = 'app/.env')
 
@@ -47,6 +48,10 @@ class Settings(BaseSettings):
     KEY_ID_YOUR_ACCOUNT: str = data['KEY_ID_YOUR_ACCOUNT']
     APPLICATION_KEY_YOUR_ACCOUNT: str = data['APPLICATION_KEY_YOUR_ACCOUNT']
 
+    REDIS_PASSWORD: str = data['REDIS_PASSWORD']
+    REDIS_HOSTNAME: str = data['REDIS_HOSTNAME']
+    REDIS_PORT: int = data['REDIS_PORT']
+
     # @field_validator("BACKEND_CORS_ORIGINS")
     # def assemble_cors_origins( cls , v: Union[str , List[str]] ) -> Union[List[str] , str]:
     #     if isinstance(v , str) and not v.startswith("["):
@@ -63,3 +68,10 @@ class Settings(BaseSettings):
 
 # settings = Settings(_env_file = '.env')
 settings = Settings()
+
+# Todo: Implement async later
+redis = Redis(
+    host = settings.REDIS_HOSTNAME,
+    port = settings.REDIS_PORT ,
+    password = settings.REDIS_PASSWORD
+)

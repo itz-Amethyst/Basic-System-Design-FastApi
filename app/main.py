@@ -9,8 +9,9 @@ from .routers import post, user , auth , vote , orm , upload
 from app.db.database import engine , metadata
 
 #? Let it be here to work
-from app.shared import logger
+from app.shared import logger , redis
 from app.shared import settings
+from app.shared.logger import logger_system
 
 
 from utils.RateLimiter import rate_limited
@@ -59,6 +60,8 @@ app.include_router(upload.router)
 # V1
 @app.on_event('startup')
 def startup():
+    if redis.ping():
+        logger_system.info("Connected to redis: Pong")
     admin_module = importlib.import_module('app.admin')
     admin_module.admin.mount_to(app)
 
