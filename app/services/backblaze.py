@@ -3,6 +3,7 @@ from botocore.exceptions import ClientError
 from botocore.config import Config
 from fastapi import HTTPException , status
 
+# https://github.com/backblaze-b2-samples/b2-python-s3-sample/blob/91d68ce06f7cb72d38c9b32253ff0c411480c959/sample.py#L34
 
 # Create the specified bucket on B2
 def create_bucket(name, b2, secure=False):

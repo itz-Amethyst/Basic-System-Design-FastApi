@@ -7,9 +7,9 @@ from starlette import status
 from app.db.database import get_db
 from app.db.models import User
 from app.db.models.user import RoleOptions
-from app.managers import PermissionManager
+from app.managers.permission import PermissionManager
 from app.managers.auth import AuthManager
-from app.managers.upload import upload_file
+from app.managers.upload import UploadManager
 from utils.Hashes import hash_password, verify_password
 from app.schemas import UserRegister
 from app.shared.errors import user_not_found , same_role
@@ -36,7 +36,7 @@ class UserManager:
             raise HTTPException(status_code = status.HTTP_409_CONFLICT ,
                                 detail = f"User with this email {user_data.email} already exists")
 
-        mime , image_path , ext , filename = upload_file(request , user_data.profile_picture)
+        mime , image_path , ext , filename = UploadManager.upload_image(request , file = user_data.profile_picture)
 
         password = hash_password(user_data.password.get_secret_value())
 

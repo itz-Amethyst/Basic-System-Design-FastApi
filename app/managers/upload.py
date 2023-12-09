@@ -63,6 +63,7 @@ class UploadManager:
             upload_file(settings.PUBLIC_BUCKET_NAME , path , file.filename , b2)
 
             image_path = f"https://{settings.PUBLIC_BUCKET_NAME}.{settings.ENDPOINT_URL_BUCKET.replace('https://','')}/{file.filename}"
+            # image_path = f"https://{settings.PUBLIC_BUCKET_NAME}.{settings.ENDPOINT_URL_BUCKET.replace('https://','')}/{(file_name_pattern + file.filename)}"
 
             # Remove the file in temp for better performances
             os.remove(path)
@@ -71,7 +72,7 @@ class UploadManager:
         if flag is True:
             return {"success": True , **({'file_path': path} if settings.DEBUG else {}), "access_url": image_path, 'message': "File Uploaded successfully" , 'size': file.size}
 
-        return (mime , image_path , ext , filename) if settings.DEBUG is True else (mime , path , ext , filename)
+        return (mime , image_path , ext , filename) if settings.DEBUG is False else (mime , path , ext , filename)
 
 
     @staticmethod
