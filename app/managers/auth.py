@@ -73,7 +73,7 @@ class CustomHTTPBearerOauth2(HTTPBearer):
 
             result = AuthManager.verify_access_token(encoded_jwt, credentials_exception = errors.credentials_exception)
 
-            result = PermissionManager.set_session_user(request = request , self = result)
+            result = PermissionManager.set_session_user(request = request , data = result)
 
             print(result)
 

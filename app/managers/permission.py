@@ -8,6 +8,11 @@ class PermissionManager:
 
     @staticmethod
     def set_session_user( request: Request , data: schemas.TokenData ):
+        data = {
+            "id": data.id,
+            "email": data.email,
+            "role": data.role
+        }
         result = request.session['user'] = data
 
         return result
