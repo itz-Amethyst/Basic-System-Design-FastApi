@@ -5,3 +5,5 @@ secrets.json
 .space
 Spacefile
 app/shared/errors.py
+/logs
+app/shared/logger.py

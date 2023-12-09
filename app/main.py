@@ -7,6 +7,9 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from .routers import post, user , auth , vote , orm , upload
 from app.db.database import engine , metadata
+
+#? Let it be here to work
+from app.shared import logger
 from app.shared import settings
 
 
