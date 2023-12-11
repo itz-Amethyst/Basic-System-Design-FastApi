@@ -1,12 +1,12 @@
 from typing import Optional , List
 
-from fastapi import Depends, HTTPException, status, Response, APIRouter
+from fastapi import Depends, HTTPException, status, Response, APIRouter, Request
 from sqlalchemy import update , func
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app import schemas
-from app.deps.auth import user_required
+from app.deps.auth import user_required , get_current_user_ifo
 from app.deps import rate_limit
 
 from app.db.models import Post , Vote
@@ -15,7 +15,7 @@ router = APIRouter(
     prefix = '/post',
     tags = ['Posts'],
     # dependencies=[rate_limit('post', 60, 30, False)]
-    # dependencies = [Depends(user_required)]
+    dependencies = [Depends(user_required)]
 )
 
 @router.get('/sqlalchemy')
@@ -43,7 +43,9 @@ def get_posts( db: Session = Depends(get_db) , Limit: int = 10 , skip: int = 0 ,
     return results
 
 @router.get("/specific_posts", response_model = list[schemas.PostViewWithVotes])
-def get_get_current_user_posts( db:Session = Depends(get_db), current_user = Depends(user_required) ):
+def get_get_current_user_posts(request: Request, db:Session = Depends(get_db)):
+
+    current_user = get_current_user_ifo(request = request)
 
     posts = (db.query(Post, func.count(Vote.post_id).label('votes'))
                .join(Vote, Vote.post_id == Post.id, isouter = True)
@@ -62,7 +64,9 @@ def get_get_current_user_posts( db:Session = Depends(get_db), current_user = Dep
 
 
 @router.post('/', status_code = status.HTTP_201_CREATED, response_model = schemas.PostView, dependencies = [rate_limit('posts:create', 60, 30)])
-def create_Post( post: schemas.CreatePost , db: Session = Depends(get_db), current_user = Depends(user_required) ):
+def create_Post(request: Request, post: schemas.CreatePost , db: Session = Depends(get_db)):
+
+    current_user = get_current_user_ifo(request = request )
 
     #? Old way
     # new_post = models.Post(title = post.title, content = post.content, published = post.published, rating = post.rating)
@@ -91,8 +95,9 @@ def get_post_by_id(id:int, db: Session = Depends(get_db)):
 
 
 @router.delete('/{id}', status_code = status.HTTP_204_NO_CONTENT)
-def delete_post( id:int , db: Session = Depends(get_db), current_user = Depends(user_required) ):
+def delete_post(request: Request, id:int , db: Session = Depends(get_db)):
 
+    current_user = get_current_user_ifo(request = request)
     post = db.query(Post).get(id)
 
 
@@ -110,7 +115,9 @@ def delete_post( id:int , db: Session = Depends(get_db), current_user = Depends(
     return Response(status_code = status.HTTP_204_NO_CONTENT,)
 
 @router.put('/{id}', response_model = schemas.PostView, dependencies = [rate_limit('posts:update', 60, 30)])
-def update_post( id:int , post: schemas.UpdatePost , db: Session = Depends(get_db), current_user = Depends(user_required) ):
+def update_post(request: Request, id:int , post: schemas.UpdatePost , db: Session = Depends(get_db)):
+
+    current_user = get_current_user_ifo(request = request)
 
     post = db.query(Post).get(id)
 
