@@ -44,7 +44,7 @@ class UploadManager:
         file_name_pattern = token_hex(5)
 
         #! Note is debug is true files will upload to upload folder if not will upload to s3 server
-        if settings.DEBUG is True:
+        if settings.DEBUG:
             upload_dir = settings.Upload_Dir / "UserAvatars"
             upload_dir.mkdir(parents = True , exist_ok = True)
             path = upload_dir / (file_name_pattern + filename + ext)
@@ -72,7 +72,8 @@ class UploadManager:
         if flag is True:
             return {"success": True , **({'file_path': path} if settings.DEBUG else {}), "access_url": image_path, 'message': "File Uploaded successfully" , 'size': file.size}
 
-        return (mime , image_path , ext , filename) if settings.DEBUG is False else (mime , path , ext , filename)
+        # return (mime , image_path , ext , filename) if settings.DEBUG is False else (mime , path , ext , filename)
+        return mime, image_path, ext, filename
 
 
     @staticmethod
