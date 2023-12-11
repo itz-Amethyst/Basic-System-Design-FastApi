@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.routing import APIRoute
+from starlette.responses import JSONResponse
 
-from app.shared.errors import all_errors
+from app.shared.errors import all_errors , Error
 
 
 def Set_Errors_In_Doc_Schema(app: FastAPI):
@@ -58,3 +59,18 @@ def Custom_OpenApi(app:FastAPI):
 
     app.openapi_schema = schema
     # return app.openapi_schema
+
+async def custom_exception_handler(request, exc):
+    if isinstance(exc, Error):
+        return JSONResponse(
+            status_code=exc.status,
+            content={
+                'code': exc.code,
+                'title': exc.title,
+                'message': exc.msg,
+                'status': exc.status,
+                'extra': exc.extra
+            },
+            headers=exc.headers
+        )
+    return await request.app.handle_exception(request, exc)

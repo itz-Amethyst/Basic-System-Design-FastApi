@@ -5,7 +5,7 @@ import importlib
 
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.config.fastapi.errors import Set_Errors_In_Doc_Schema , Custom_OpenApi
+from app.config.fastapi.errors import Set_Errors_In_Doc_Schema , Custom_OpenApi , custom_exception_handler
 from .routers import post, user , auth , vote , orm , upload
 from app.db.database import engine , metadata
 
@@ -14,7 +14,7 @@ from app.shared import logger , redis
 from app.shared import settings
 from app.shared.logger import logger_system
 
-from app.shared.errors import all_errors
+from app.shared.errors import all_errors , Error
 
 from utils.RateLimiter import rate_limited
 # NOTE: This should be here when you start the app it will run main.py so to create models
@@ -93,6 +93,9 @@ def get_all_errors():
 Set_Errors_In_Doc_Schema(app)
 
 Custom_OpenApi(app)
+
+# To convert custom errors in json format
+app.add_exception_handler(Error, custom_exception_handler)
 
 # app.openapi = schema
 
