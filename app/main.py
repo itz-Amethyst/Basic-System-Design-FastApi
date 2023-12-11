@@ -6,6 +6,7 @@ import importlib
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.config.fastapi.errors import Set_Errors_In_Doc_Schema , Custom_OpenApi , custom_exception_handler
+from .deps.auth import get_ip
 from .routers import post, user , auth , vote , orm , upload
 from app.db.database import engine , metadata
 
@@ -27,7 +28,7 @@ from utils.RateLimiter import rate_limited
 
 # Link: https://fastapi.tiangolo.com/how-to/configure-swagger-ui/
 # Theme: obsidian
-app = FastAPI(swagger_ui_parameters = {"syntaxHighlight.theme": "nord"})
+app = FastAPI(swagger_ui_parameters = {"syntaxHighlight.theme": "nord"}, dependencies = [get_ip()])
 app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
 
 

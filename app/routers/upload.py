@@ -3,10 +3,12 @@ from starlette.requests import Request
 
 from app.managers.upload import UploadManager
 from app.shared.errors import bad_file , database_error
+from app.deps import rate_limit
 
 router = APIRouter(
     prefix = '/upload',
-    tags = ['Upload']
+    tags = ['Upload'],
+    dependencies = [rate_limit('upload', 60, 30, use_id = False)]
 )
 @router.post('/', status_code = status.HTTP_201_CREATED, openapi_extra = {'errors': [bad_file]})
 def upload_file(request: Request, file: UploadFile = File(..., description='Provide an avatar', media_type=['image/jpeg', 'image/png'])):

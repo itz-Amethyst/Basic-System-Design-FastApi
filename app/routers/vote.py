@@ -5,13 +5,14 @@ from app import schemas
 from app.db.database import get_db
 from app.deps.auth import user_required
 from app.db.models import Vote , Post
+from app.deps import rate_limit
 
 # you can define dependency here either to apply on all apis
 
 router = APIRouter(
     prefix = '/vote',
     tags = ['Vote'],
-    dependencies = [Depends(user_required)]
+    dependencies = [Depends(user_required), Depends(rate_limit('vote', 60, 30, use_id = False))]
 )
 
 

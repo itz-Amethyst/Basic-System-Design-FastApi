@@ -7,6 +7,7 @@ from app.db.models.user import RoleOptions
 from app.deps.auth import user_required
 from app.managers import UserManager , PermissionManager
 from app import schemas
+from app.deps import rate_limit
 
 from app.db.models import User
 
@@ -14,7 +15,7 @@ router = APIRouter(
     prefix = '/user',
     # You can add multiple tags
     tags = ['Users'],
-    dependencies = [Depends(user_required), Depends(PermissionManager.is_admin)]
+    dependencies = [Depends(user_required), Depends(PermissionManager.is_admin), Depends(rate_limit('user', 60, 30))]
 )
 
 @router.post('/', status_code = status.HTTP_201_CREATED, response_model = schemas.UserView)

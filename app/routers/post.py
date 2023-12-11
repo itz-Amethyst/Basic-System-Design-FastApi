@@ -7,12 +7,14 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app import schemas
 from app.deps.auth import user_required
+from app.deps import rate_limit
 
 from app.db.models import Post , Vote
 
 router = APIRouter(
     prefix = '/post',
     tags = ['Posts'],
+    # dependencies=[rate_limit('post', 60, 30, False)]
     # dependencies = [Depends(user_required)]
 )
 
@@ -22,7 +24,7 @@ def test_posts(db: Session = Depends(get_db)):
     return {"message": db.query(Post).all()}
 
 # @router.get('/', response_model = list[schemas.PostView])
-@router.get('/', response_model = List[schemas.PostViewWithVotes])
+@router.get('/', response_model = List[schemas.PostViewWithVotes], dependencies = [rate_limit('posts:get', 60, 30)])
 def get_posts( db: Session = Depends(get_db) , Limit: int = 10 , skip: int = 0 , search: Optional[str] = "" ):
     print(search)
 
@@ -59,7 +61,7 @@ def get_get_current_user_posts( db:Session = Depends(get_db), current_user = Dep
     return posts
 
 
-@router.post('/', status_code = status.HTTP_201_CREATED, response_model = schemas.PostView)
+@router.post('/', status_code = status.HTTP_201_CREATED, response_model = schemas.PostView, dependencies = [rate_limit('posts:create', 60, 30)])
 def create_Post( post: schemas.CreatePost , db: Session = Depends(get_db), current_user = Depends(user_required) ):
 
     #? Old way
@@ -107,7 +109,7 @@ def delete_post( id:int , db: Session = Depends(get_db), current_user = Depends(
 
     return Response(status_code = status.HTTP_204_NO_CONTENT,)
 
-@router.put('/{id}', response_model = schemas.PostView)
+@router.put('/{id}', response_model = schemas.PostView, dependencies = [rate_limit('posts:update', 60, 30)])
 def update_post( id:int , post: schemas.UpdatePost , db: Session = Depends(get_db), current_user = Depends(user_required) ):
 
     post = db.query(Post).get(id)
