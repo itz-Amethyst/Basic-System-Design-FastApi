@@ -3,18 +3,20 @@ from sqlalchemy.orm import Session
 
 from app import schemas
 from app.db.database import get_db
-from app.managers.auth import AuthManager
+from app.deps.auth import user_required
 from app.db.models import Vote , Post
+
+# you can define dependency here either to apply on all apis
 
 router = APIRouter(
     prefix = '/vote',
-    tags = ['Vote']
+    tags = ['Vote'],
+    dependencies = [Depends(user_required)]
 )
 
 
 @router.post('/', status_code = status.HTTP_201_CREATED)
-def vote( vote: schemas.Vote , db : Session = Depends(get_db) , current_user: schemas.TokenData = Depends(
-    AuthManager.get_current_user) ):
+def vote( vote: schemas.Vote , db : Session = Depends(get_db) , current_user: schemas.TokenData = Depends(user_required)):
 
     found_vote: Vote = db.query(Vote).filter(Vote.post_id == vote.post_id , Vote.user_id == current_user.id).first()
 

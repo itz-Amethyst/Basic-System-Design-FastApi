@@ -6,14 +6,14 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app import schemas
-
-from app.managers.auth import AuthManager
+from app.deps.auth import user_required
 
 from app.db.models import Post , Vote
 
 router = APIRouter(
     prefix = '/post',
-    tags = ['Posts']
+    tags = ['Posts'],
+    # dependencies = [Depends(user_required)]
 )
 
 @router.get('/sqlalchemy')
@@ -22,7 +22,7 @@ def test_posts(db: Session = Depends(get_db)):
     return {"message": db.query(Post).all()}
 
 # @router.get('/', response_model = list[schemas.PostView])
-@router.get('/', response_model = List[schemas.PostViewWithVotes], dependencies = [Depends(AuthManager.get_current_user)])
+@router.get('/', response_model = List[schemas.PostViewWithVotes])
 def get_posts( db: Session = Depends(get_db) , Limit: int = 10 , skip: int = 0 , search: Optional[str] = "" ):
     print(search)
 
@@ -41,7 +41,7 @@ def get_posts( db: Session = Depends(get_db) , Limit: int = 10 , skip: int = 0 ,
     return results
 
 @router.get("/specific_posts", response_model = list[schemas.PostViewWithVotes])
-def get_current_user_posts( db:Session = Depends(get_db) , current_user = Depends(AuthManager.get_current_user) ):
+def get_get_current_user_posts( db:Session = Depends(get_db), current_user = Depends(user_required) ):
 
     posts = (db.query(Post, func.count(Vote.post_id).label('votes'))
                .join(Vote, Vote.post_id == Post.id, isouter = True)
@@ -51,7 +51,7 @@ def get_current_user_posts( db:Session = Depends(get_db) , current_user = Depend
 
 
     # Without Votes
-    # posts = db.query(Post).filter(Post.owner_id == current_user.id).all()
+    # posts = db.query(Post).filter(Post.owner_id == get_current_user.id).all()
 
     if len(posts) == 0:
         return Response(content = f"No Post Created for user {current_user.id}")
@@ -60,8 +60,7 @@ def get_current_user_posts( db:Session = Depends(get_db) , current_user = Depend
 
 
 @router.post('/', status_code = status.HTTP_201_CREATED, response_model = schemas.PostView)
-def create_Post( post: schemas.CreatePost , db: Session = Depends(get_db) , current_user: str = Depends(
-    AuthManager.get_current_user) ):
+def create_Post( post: schemas.CreatePost , db: Session = Depends(get_db), current_user = Depends(user_required) ):
 
     #? Old way
     # new_post = models.Post(title = post.title, content = post.content, published = post.published, rating = post.rating)
@@ -90,7 +89,7 @@ def get_post_by_id(id:int, db: Session = Depends(get_db)):
 
 
 @router.delete('/{id}', status_code = status.HTTP_204_NO_CONTENT)
-def delete_post( id:int , db: Session = Depends(get_db) , current_user = Depends(AuthManager.get_current_user) ):
+def delete_post( id:int , db: Session = Depends(get_db), current_user = Depends(user_required) ):
 
     post = db.query(Post).get(id)
 
@@ -109,8 +108,7 @@ def delete_post( id:int , db: Session = Depends(get_db) , current_user = Depends
     return Response(status_code = status.HTTP_204_NO_CONTENT,)
 
 @router.put('/{id}', response_model = schemas.PostView)
-def update_post( id:int , post: schemas.UpdatePost , db: Session = Depends(get_db) , current_user = Depends(
-    AuthManager.get_current_user) ):
+def update_post( id:int , post: schemas.UpdatePost , db: Session = Depends(get_db), current_user = Depends(user_required) ):
 
     post = db.query(Post).get(id)
 
