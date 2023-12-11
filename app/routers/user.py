@@ -15,7 +15,7 @@ router = APIRouter(
     prefix = '/user',
     # You can add multiple tags
     tags = ['Users'],
-    dependencies = [Depends(user_required), Depends(PermissionManager.is_admin), Depends(rate_limit('user', 60, 30))]
+    dependencies = [Depends(user_required), Depends(PermissionManager.is_admin), rate_limit('user', 60, 30)]
 )
 
 @router.post('/', status_code = status.HTTP_201_CREATED, response_model = schemas.UserView)

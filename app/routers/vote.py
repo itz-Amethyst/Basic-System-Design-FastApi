@@ -12,7 +12,7 @@ from app.deps import rate_limit
 router = APIRouter(
     prefix = '/vote',
     tags = ['Vote'],
-    dependencies = [Depends(user_required), Depends(rate_limit('vote', 60, 30, use_id = False))]
+    dependencies = [Depends(user_required), rate_limit('vote', 60, 30, use_id = False)]
 )
 
 

@@ -11,7 +11,7 @@ from .auth import user_required
 
 def rate_limit(path_id: str, period: int, amount: int, use_id=True):
     async def check(identifier: str):
-        if settings.debug:
+        if settings.DEBUG:
             return
 
         value, expire = await rate_limit_get(identifier)
@@ -25,7 +25,7 @@ def rate_limit(path_id: str, period: int, amount: int, use_id=True):
         await rate_limit_set(identifier, period)
 
     async def with_id(user=user_required()):
-        key = f'{path_id}:{user.user_id}'
+        key = f'{path_id}:{user.id}'
         identifier = sha256(key.encode('utf-8')).hexdigest()
         await check(identifier)
 
