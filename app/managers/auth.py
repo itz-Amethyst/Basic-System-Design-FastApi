@@ -53,11 +53,6 @@ class AuthManager:
 
         return token_data
 
-    # Check if user is logged in
-    @staticmethod
-    def get_current_user(token: str = Depends(oauth2_password)):
-
-        return AuthManager.verify_access_token(token , errors.credentials_exception)
 
 
 class CustomHTTPBearerOauth2(HTTPBearer):
