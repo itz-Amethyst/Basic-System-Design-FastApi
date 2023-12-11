@@ -3,6 +3,9 @@ from botocore.exceptions import ClientError
 from botocore.config import Config
 from fastapi import HTTPException , status
 
+from app.shared.errors import database_error
+
+
 # https://github.com/backblaze-b2-samples/b2-python-s3-sample/blob/91d68ce06f7cb72d38c9b32253ff0c411480c959/sample.py#L34
 
 # Create the specified bucket on B2
@@ -83,6 +86,7 @@ def list_objects_browsable_url(bucket, endpoint, b2):
 
     except ClientError as ce:
         print('error', ce)
+        raise database_error
 
 
 # Return a boto3 resource object for B2 service

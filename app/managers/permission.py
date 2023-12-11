@@ -7,11 +7,11 @@ from app.shared.errors import permission_excepted
 class PermissionManager:
 
     @staticmethod
-    def set_session_user( request: Request , data: schemas.TokenData ):
+    def set_session_user( request: Request , data ):
         data = {
-            "id": data.id,
-            "email": data.email,
-            "role": data.role
+            "id": data['id'],
+            "email": data['email'],
+            "role": data['role']
         }
         result = request.session['user'] = data
 

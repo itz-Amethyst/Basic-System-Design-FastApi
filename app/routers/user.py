@@ -8,7 +8,7 @@ from app.managers import UserManager , PermissionManager , AuthManager
 from app import schemas
 
 from app.db.models import User
-
+from app.shared.errors import same_role
 
 router = APIRouter(
     prefix = '/user',
@@ -51,7 +51,7 @@ def get_user(id: str, db: Session = Depends(get_db)):
     return user
 
 # Note Careful about dependency order check is user logged in must be at first position
-@router.post('/{id}', response_model = schemas.UserView, dependencies = [ Depends(AuthManager.get_current_user) ,Depends(PermissionManager.is_admin)])
+@router.post('/{id}', response_model = schemas.UserView, dependencies = [ Depends(AuthManager.get_current_user) ,Depends(PermissionManager.is_admin)], openapi_extra = {'errors': [same_role]})
 def change_role(id:str, role: RoleOptions):
 
     return UserManager.ChangeRole(user_id = id, role = role)
