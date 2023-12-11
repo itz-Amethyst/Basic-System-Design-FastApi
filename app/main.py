@@ -3,10 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import importlib
 
-from fastapi.openapi.utils import get_openapi
-from fastapi.routing import APIRoute
 from starlette.middleware.sessions import SessionMiddleware
 
+from app.config.fastapi.errors import Set_Errors_In_Doc_Schema , Custom_OpenApi
 from .routers import post, user , auth , vote , orm , upload
 from app.db.database import engine , metadata
 
@@ -15,7 +14,7 @@ from app.shared import logger , redis
 from app.shared import settings
 from app.shared.logger import logger_system
 
-from app.shared.errors import Set_Errors_In_Doc_Schema , all_errors
+from app.shared.errors import all_errors
 
 from utils.RateLimiter import rate_limited
 # NOTE: This should be here when you start the app it will run main.py so to create models
@@ -63,8 +62,12 @@ app.include_router(upload.router)
 # V1
 @app.on_event('startup')
 def startup():
-    if redis.ping():
-        logger_system.info("Connected to redis: Pong")
+    try:
+        if redis.ping():
+            logger_system.info("Connected to redis: Pong")
+    except:
+        logger_system.info("Something went wrong with redis")
+
     admin_module = importlib.import_module('app.admin')
     admin_module.admin.mount_to(app)
 
@@ -82,72 +85,14 @@ def startup():
 async def root():
     return {"message": "hello there"}
 
+@app.get('/get_all_errors',description="List of all errors",summary = "Get all errors", tags = ["Extras"])
+def get_all_errors():
+    return {'errors': [e.schema['example'] for e in all_errors]}
 
 
-# Set_Errors_In_Doc_Schema(app)
+Set_Errors_In_Doc_Schema(app)
 
-for route in app.routes:
-    if not isinstance(route, APIRoute):
-        continue
+Custom_OpenApi(app)
 
-    errors = []
-
-    for d in route.dependencies:
-        errors.extend(getattr(d, 'errors', []))
-
-    oid = route.path.replace('/', '_').strip('_')
-    oid += '_' + '_'.join(route.methods)
-    route.operation_id = oid
-
-    errors.extend((route.openapi_extra or {}).pop('errors', []))
-
-    for e in errors:
-        route.responses[e.code] = {
-            'description': f'{e.title} - {e.status}',
-            'content': {
-                'application/json': {
-                    'schema': {
-                        '$ref': f'#/errors/{e.code}',
-                    }
-                }
-            }
-        }
-
-
-def custom_openapi():
-    if app.openapi_schema:
-        return app.openapi_schema
-
-    schema = get_openapi(
-        title=app.title,
-        version=app.version,
-        description=app.description,
-        routes=app.routes,
-    )
-
-    schema['errors'] = {}
-
-    for e in all_errors:
-        schema['errors'][e.code] = e.schema
-
-    # Combine all error schemas into one using 'allOf'
-    all_errors_schema = {
-        'allOf': [
-            {'$ref': f'#/errors/{e.code}'}
-            for e in all_errors
-        ]
-    }
-
-    schema['components']['schemas']['errors'] = all_errors_schema
-
-    # Add the combined errors schema to 'components/schemas'
-
-    # Add individual error schemas under 'components/schemas/errors'
-    # for e in all_errors:
-    #     schema['components']['schemas'][f'errors/{e.code}'] = e.schema
-
-    app.openapi_schema = schema
-    return app.openapi_schema
-
-app.openapi = custom_openapi
+# app.openapi = schema
 
