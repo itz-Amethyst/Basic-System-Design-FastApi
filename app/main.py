@@ -7,7 +7,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.config.fastapi.errors import Set_Errors_In_Doc_Schema , Custom_OpenApi , custom_exception_handler
 from .deps.auth import get_ip
-from .routers import post, user , auth , vote , orm , upload
+from .routers import post, user , auth , vote , orm , upload, redis as redis_router
 from app.db.database import engine , metadata
 
 #? Let it be here to work
@@ -54,6 +54,7 @@ app.include_router(auth.router)
 app.include_router(vote.router)
 app.include_router(orm.router)
 app.include_router(upload.router)
+app.include_router(redis_router.router)
 
 #! Never ever use fastapi-crudrouter not available in sqlalchemy Base Version
 
@@ -61,16 +62,16 @@ app.include_router(upload.router)
 
 #* Note: Conflict when activate both of them in same time
 # V1
-@app.on_event('startup')
-def startup():
-    try:
-        if redis.ping():
-            logger_system.info("Connected to redis: Pong")
-    except:
-        logger_system.info("Something went wrong with redis")
-
-    admin_module = importlib.import_module('app.admin')
-    admin_module.admin.mount_to(app)
+# @app.on_event('startup')
+# def startup():
+#     try:
+#         if redis.ping():
+#             logger_system.info("Connected to redis: Pong")
+#     except:
+#         logger_system.info("Something went wrong with redis")
+#
+#     admin_module = importlib.import_module('app.admin')
+#     admin_module.admin.mount_to(app)
 
 
 # V2

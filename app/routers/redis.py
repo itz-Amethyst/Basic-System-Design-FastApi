@@ -14,6 +14,18 @@ router = APIRouter(
     prefix = '/redis'
 )
 
+
+class UserData:
+    def __init__(self, data):
+        self._data = {key.decode('utf-8'): value.decode('utf-8') for key, value in data.items()}
+
+    def __getattr__(self, name):
+        return self._data.get(name, '')
+
+    def __getitem__(self, name):
+        return self._data.get(name, '')
+
+
 user1 = {
     "name": "Paul John",
     "email": "paul.john@example.com",
@@ -93,11 +105,21 @@ def register_user(email: EmailStr, password: str):
 @router.post('/login')
 def login_user(email: EmailStr, password: str):
     user_key = f'User:{email}'
-    stored_user_data = redis.hgetall(user_key)
-    stored_password = stored_user_data.get(b'password' , b'').decode('utf-8')
+    # stored_user_data = redis.hgetall(user_key)
 
-    if not stored_user_data or password != stored_password:
+    #region mess
+    # stored_password = stored_user_data.get(b'password' , b'').decode('utf-8')
+    # lock_acc = stored_user_data.get(b'lock_account' , b'').decode('utf-8')
+    #endregion
+
+    user_data = UserData(redis.hgetall(user_key))
+
+
+    if not user_data or password != user_data.password:
         return HTTPException(status_code = status.HTTP_404_NOT_FOUND , detail = "Invalid Credentials")
+
+    if user_data.lock_account == 'True':
+        return HTTPException(status_code = status.HTTP_403_FORBIDDEN , detail = "Your account has been locked due multiple login")
 
     # Increase login count
     redis.zincrby(name = range_table_name,amount = 1,  value = str({user_key}))
