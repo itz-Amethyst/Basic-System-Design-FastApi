@@ -83,7 +83,7 @@ def register_user(email: EmailStr, password: str):
         'email': email ,
         'password': password
     }
-    redis.hmset(user_key , user_data)
+    redis.hset(user_key , user_data)
 
     return {"message": "Registration successful"}
 
@@ -96,6 +96,17 @@ def login_user(email: EmailStr, password: str):
     if not stored_user_data or password != stored_password:
         return HTTPException(status_code = status.HTTP_404_NOT_FOUND , detail = "Invalid Credentials")
 
+    # Increase login count
+    redis.zincrby(name = 'UserLogins_count',amount = 1,  value = str({user_key}))
+
     # stored_password = stored_user_data['password']
 
     return {"message": "Login successful"}
+
+@router.get('/get_logins_count')
+def get_user_logins_count():
+    # data = redis.zrange('UserLogins_count', start = 0, end = -1)
+    # ordering asc / des
+    data = redis.zrevrange('UserLogins_count', start = 0, end = -1, withscores = True)
+
+    return {"message": data}
