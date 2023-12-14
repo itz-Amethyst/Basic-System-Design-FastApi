@@ -1,3 +1,4 @@
+from math import inf
 
 from fastapi import APIRouter, Response, HTTPException
 from pydantic import EmailStr
@@ -37,6 +38,8 @@ schema = (
     TagField("$.city", as_name="city"),
     NumericField("$.age", as_name="age")
 )
+range_table_name = 'UserLogins_count'
+
 
 @router.get('/')
 def test():
@@ -97,7 +100,7 @@ def login_user(email: EmailStr, password: str):
         return HTTPException(status_code = status.HTTP_404_NOT_FOUND , detail = "Invalid Credentials")
 
     # Increase login count
-    redis.zincrby(name = 'UserLogins_count',amount = 1,  value = str({user_key}))
+    redis.zincrby(name = range_table_name,amount = 1,  value = str({user_key}))
 
     # stored_password = stored_user_data['password']
 
@@ -105,8 +108,26 @@ def login_user(email: EmailStr, password: str):
 
 @router.get('/get_logins_count')
 def get_user_logins_count():
+    #! ordering asc / des
+
     # data = redis.zrange('UserLogins_count', start = 0, end = -1)
-    # ordering asc / des
-    data = redis.zrevrange('UserLogins_count', start = 0, end = -1, withscores = True)
+    data = redis.zrevrange(range_table_name, start = 0, end = -1, withscores = True)
+
+    #? get UserLogins_count and check if it was greater than 10 lock the account
+    locked_user = redis.zrangebyscore(range_table_name, min = 5, max = +inf)
+
+    for user_key_bytes in locked_user:
+        user_key = user_key_bytes.decode('utf-8')  # Convert bytes to string
+        # user_key = ast.literal_eval(user_key)
+        user_key = user_key.strip("'{}'")
+        user_data = redis.hgetall(user_key)
+
+        # Check if the user_data contains the 'lock_field' key
+        if b'lock_field' not in user_data:
+            # Set the 'lock_field' to True for the user
+            redis.hset(user_key , 'lock_account' , 'True')
+
+
 
     return {"message": data}
+
