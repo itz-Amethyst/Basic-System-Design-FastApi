@@ -62,16 +62,18 @@ app.include_router(redis_router.router)
 
 #* Note: Conflict when activate both of them in same time
 # V1
-# @app.on_event('startup')
-# def startup():
-#     try:
-#         if redis.ping():
-#             logger_system.info("Connected to redis: Pong")
-#     except:
-#         logger_system.info("Something went wrong with redis")
-#
-#     admin_module = importlib.import_module('app.admin')
-#     admin_module.admin.mount_to(app)
+@app.on_event('startup')
+def startup():
+    # try:
+    #     if redis.ping():
+    #         logger_system.info("Connected to redis: Pong")
+    # except:
+    #     logger_system.info("Something went wrong with redis")
+
+    # redis.ping()
+
+    admin_module = importlib.import_module('app.admin')
+    admin_module.admin.mount_to(app)
 
 
 # V2

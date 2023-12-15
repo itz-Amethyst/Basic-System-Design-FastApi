@@ -72,8 +72,15 @@ class Settings(BaseSettings):
 settings = Settings()
 
 # Todo: Implement async later
-redis = Redis(
-    host = settings.REDIS_HOSTNAME,
-    port = settings.REDIS_PORT ,
-    password = settings.REDIS_PASSWORD
-)
+# redis = Redis(
+#     host = settings.REDIS_HOSTNAME,
+#     port = settings.REDIS_PORT ,
+#     password = settings.REDIS_PASSWORD
+# )
+
+
+from app.shared.setup import RedisCacheSingleton
+
+redis_instance = RedisCacheSingleton()
+#! Actual Redis
+redis = redis_instance.get_redis()
