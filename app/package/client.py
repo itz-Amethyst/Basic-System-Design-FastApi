@@ -40,8 +40,10 @@ class FastApiRedisCache(metaclass=MetaSingleton):
     response_header: str = None
     status: RedisStatus = RedisStatus.NONE
     redis: client.Redis = None
-    logger_system = None
-    local = False
+    logger_system: logging.Logger = None
+    local: bool = False
+    password: str = None
+    port: int = 0
 
     @property
     def connected(self):
@@ -57,7 +59,10 @@ class FastApiRedisCache(metaclass=MetaSingleton):
             response_header: Optional[str] = None ,
             ignore_arg_types: Optional[List[Type[object]]] = None ,
             logger_system: Optional[logging.Logger] = None,
-            local: Optional[bool] = False
+            local: Optional[bool] = False,
+            host_url: str = "localhost",
+            password: Optional[str] = None,
+            port: Optional[int] = 0
     ) -> None:
         """ Initialize the redis system you can `config` the essential settings.
            Args:
@@ -70,32 +75,27 @@ class FastApiRedisCache(metaclass=MetaSingleton):
                     are any arguments that have no effect on the response (such as a
                     `Request` or `Response` object), including their type in this list
                     will ignore those arguments when the key is created. Defaults to None.
+                logger_system (logging.Logger, optional): Gets your custom logging config system
+                    if you provided for log operation, if not uses the default one
+                local (bool, optional): Set to True if you use local redis server.
+                host_url (str): URL for a Redis database.
+                password (str, optional): Password for Redis Cloud.
+                port (int, optional): Port number for Redis Cloud.
         """
         self.prefix = prefix
         self.response_header = response_header or DEFAULT_RESPONSE_HEADER
         self.ignore_arg_types = ignore_arg_types
-        self.logger_system = logger_system
+        self.logger_system = logger_system or logger
         self.local = local
-        # Work on this
-        self._connect()
-
-    def init(
-        self,
-        host_url: str,
-
-    ) -> None:
-        """Connect to a Redis database using `host_url` and configure cache settings.
-
-            Args:
-                host_url (str): URL for a Redis database.
-        """
         self.host_url = host_url
+        self.password = password
+        self.port = port
 
         self._connect()
 
     def _connect(self):
         self.log(RedisEvent.CONNECT_BEGIN, msg="Attempting to connect to Redis server...")
-        self.status, self.redis = redis_connect(self.host_url, self.local)
+        self.status, self.redis = redis_connect(self.host_url, self.local, self.password, self.port)
         if self.status == RedisStatus.CONNECTED:
             self.log(RedisEvent.CONNECT_SUCCESS, msg="Redis client is connected to server.")
         if self.status == RedisStatus.AUTH_ERROR:  # pragma: no cover
@@ -156,10 +156,7 @@ class FastApiRedisCache(metaclass=MetaSingleton):
             message += f": key={key}"
         if value:
             message += f", value={value}"
-        if self.logger_system:
-            self.logger_system.info(message)
-        else:
-            logger.info(message)
+        logger.info(message)
 
     @staticmethod
     def get_etag(cached_data: Union[str, bytes, Dict]) -> str:
