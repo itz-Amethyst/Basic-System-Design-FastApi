@@ -4,6 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette import status
 
+from app import schemas
 from app.db.database import get_db
 from app.db.models import User
 from app.db.models.user import RoleOptions
@@ -65,6 +66,7 @@ class UserManager:
             raise HTTPException(status_code = status.HTTP_403_FORBIDDEN , detail = f"Invalid Credentials")
 
         imp_data = {"id": user.id , "email": user.email , "role": user.role.value}
+        # imp_data: schemas.TokenData = schemas.TokenData(id= user.id, email=user.email, role= user.role.value)
 
         # You can give role later or anything , scopes of access
         access_token = AuthManager.create_access_token(

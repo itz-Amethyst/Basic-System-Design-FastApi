@@ -6,10 +6,11 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app import schemas
-from app.deps.auth import user_required , get_current_user_ifo
+from app.deps.auth import user_required , get_current_user_info
 from app.deps import rate_limit
 
 from app.db.models import Post , Vote
+from app.package import cache_one_hour
 
 router = APIRouter(
     prefix = '/post',
@@ -18,6 +19,7 @@ router = APIRouter(
     dependencies = [Depends(user_required)]
 )
 
+# @cache_one_hour()
 @router.get('/sqlalchemy')
 def test_posts(db: Session = Depends(get_db)):
 
@@ -45,7 +47,7 @@ def get_posts( db: Session = Depends(get_db) , Limit: int = 10 , skip: int = 0 ,
 @router.get("/specific_posts", response_model = list[schemas.PostViewWithVotes])
 def get_get_current_user_posts(request: Request, db:Session = Depends(get_db)):
 
-    current_user = get_current_user_ifo(request = request)
+    current_user = get_current_user_info(request = request)
 
     posts = (db.query(Post, func.count(Vote.post_id).label('votes'))
                .join(Vote, Vote.post_id == Post.id, isouter = True)
@@ -66,7 +68,7 @@ def get_get_current_user_posts(request: Request, db:Session = Depends(get_db)):
 @router.post('/', status_code = status.HTTP_201_CREATED, response_model = schemas.PostView, dependencies = [rate_limit('posts:create', 60, 30)])
 def create_Post(request: Request, post: schemas.CreatePost , db: Session = Depends(get_db)):
 
-    current_user = get_current_user_ifo(request = request )
+    current_user = get_current_user_info(request = request )
 
     #? Old way
     # new_post = models.Post(title = post.title, content = post.content, published = post.published, rating = post.rating)
@@ -97,7 +99,7 @@ def get_post_by_id(id:int, db: Session = Depends(get_db)):
 @router.delete('/{id}', status_code = status.HTTP_204_NO_CONTENT)
 def delete_post(request: Request, id:int , db: Session = Depends(get_db)):
 
-    current_user = get_current_user_ifo(request = request)
+    current_user = get_current_user_info(request = request)
     post = db.query(Post).get(id)
 
 
@@ -117,7 +119,7 @@ def delete_post(request: Request, id:int , db: Session = Depends(get_db)):
 @router.put('/{id}', response_model = schemas.PostView, dependencies = [rate_limit('posts:update', 60, 30)])
 def update_post(request: Request, id:int , post: schemas.UpdatePost , db: Session = Depends(get_db)):
 
-    current_user = get_current_user_ifo(request = request)
+    current_user = get_current_user_info(request = request)
 
     post = db.query(Post).get(id)
 

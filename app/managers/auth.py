@@ -1,6 +1,6 @@
 from datetime import datetime , timedelta
 
-from fastapi import Depends, Request
+from fastapi import Request
 
 from app import schemas
 from typing import Optional
@@ -32,7 +32,7 @@ class AuthManager:
             raise e
 
     @staticmethod
-    def verify_access_token( token: str , credentials_exception ):
+    async def verify_access_token( token: str , credentials_exception ):
 
         try:
             payload = jwt.decode(token , settings.SECRET_KEY , algorithms = [settings.ALGORITHM])
@@ -46,8 +46,8 @@ class AuthManager:
             if user_id is None:
                 raise credentials_exception
 
-            token_data = schemas.TokenData(id = user_id , email = user_email , role = role)
-
+            # token_data = schemas.TokenData(id = user_id , email = user_email , role = role)
+            token_data = {"id": user_id, "email": user_email, "role": role}
         except JWTError:
             raise credentials_exception
 

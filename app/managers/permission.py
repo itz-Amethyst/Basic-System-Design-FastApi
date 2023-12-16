@@ -8,11 +8,11 @@ class PermissionManager:
 
     @staticmethod
     def set_session_user( request: Request , data ):
-        data = {
-            "id": data['id'],
-            "email": data['email'],
-            "role": data['role']
-        }
+        # data = {
+        #     "id": data['id'],
+        #     "email": data['email'],
+        #     "role": data['role']
+        # }
         result = request.session['user'] = data
 
         return result
