@@ -4,22 +4,27 @@ from fastapi import Depends, Request
 
 from app import schemas
 from app.managers.auth import oauth2_password , AuthManager
+from app.shared import settings
 from app.shared.errors import credentials_exception , rate_limited , bad_auth
 from app.db.redis import rate_limit_get, rate_limit_set
 
-
 # Check if user is logged in
-def user_required():
-    async def decorator(request: Request, token: str = Depends(oauth2_password)):
+def user_required(token:str = Depends(oauth2_password)):
+
+    #? To Save token to fix chaining dependencies !@$#
+    if isinstance(token, str):
+        settings.TOKEN_ACTUAL = token
+    async def decorator():
         print("inside")
-        return AuthManager.verify_access_token(token , credentials_exception)
+        return await AuthManager.verify_access_token(settings.TOKEN_ACTUAL, credentials_exception)
         # request.state.user = user
 
     dep = Depends(decorator)
     dep.errors = [bad_auth, rate_limited]
     return dep
 
-def get_current_user_ifo(request: Request):
+
+def get_current_user_info(request: Request):
     user = request.session.get('user')
     current_user: schemas.TokenData = schemas.TokenData(
         id = user.get('id' , None) ,

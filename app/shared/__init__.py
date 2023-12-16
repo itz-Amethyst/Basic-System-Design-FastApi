@@ -54,6 +54,8 @@ class Settings(BaseSettings):
 
     VERIFICATION_CODE_LEN: int = data['VERIFICATION_CODE_LEN']
 
+    TOKEN_ACTUAL: str = ""
+
     # @field_validator("BACKEND_CORS_ORIGINS")
     # def assemble_cors_origins( cls , v: Union[str , List[str]] ) -> Union[List[str] , str]:
     #     if isinstance(v , str) and not v.startswith("["):
@@ -72,15 +74,15 @@ class Settings(BaseSettings):
 settings = Settings()
 
 # Todo: Implement async later
-# redis = Redis(
-#     host = settings.REDIS_HOSTNAME,
-#     port = settings.REDIS_PORT ,
-#     password = settings.REDIS_PASSWORD
-# )
+redis = Redis(
+    host = settings.REDIS_HOSTNAME,
+    port = settings.REDIS_PORT ,
+    password = settings.REDIS_PASSWORD
+)
 
 
 from app.shared.setup import RedisCacheSingleton
 
-redis_instance = RedisCacheSingleton()
+# redis_instance = RedisCacheSingleton()
 #! Actual Redis
-redis = redis_instance.get_redis()
+# redis = redis_instance.get_redis()
