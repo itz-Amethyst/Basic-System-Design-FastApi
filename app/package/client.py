@@ -54,33 +54,33 @@ class FastApiRedisCache(metaclass=MetaSingleton):
         return not self.connected
 
     def __init__(
-            self,
-            prefix: Optional[str] = None ,
-            response_header: Optional[str] = None ,
-            ignore_arg_types: Optional[List[Type[object]]] = None ,
-            logger_system: Optional[logging.Logger] = None,
-            local: Optional[bool] = False,
-            host_url: str = "localhost",
-            password: Optional[str] = None,
-            port: Optional[int] = 0
+        self,
+        prefix: Optional[str] = None,
+        response_header: Optional[str] = None,
+        ignore_arg_types: Optional[List[Type[object]]] = None,
+        logger_system: Optional[logging.Logger] = None,
+        local: Optional[bool] = False,
+        host_url: str = "localhost",
+        password: Optional[str] = None,
+        port: Optional[int] = 0,
     ) -> None:
-        """ Initialize the redis system you can `config` the essential settings.
-           Args:
-                prefix (str, optional): Prefix to add to every cache key stored in the
-                    Redis database. Defaults to None.
-                response_header (str, optional): Name of the custom header field used to
-                    identify cache hits/misses. Defaults to None.
-                ignore_arg_types (List[Type[object]], optional): Each argument to the
-                    API endpoint function is used to compose the cache key. If there
-                    are any arguments that have no effect on the response (such as a
-                    `Request` or `Response` object), including their type in this list
-                    will ignore those arguments when the key is created. Defaults to None.
-                logger_system (logging.Logger, optional): Gets your custom logging config system
-                    if you provided for log operation, if not uses the default one
-                local (bool, optional): Set to True if you use local redis server.
-                host_url (str): URL for a Redis database.
-                password (str, optional): Password for Redis Cloud.
-                port (int, optional): Port number for Redis Cloud.
+        """Initialize the redis system you can `config` the essential settings.
+        Args:
+             prefix (str, optional): Prefix to add to every cache key stored in the
+                 Redis database. Defaults to None.
+             response_header (str, optional): Name of the custom header field used to
+                 identify cache hits/misses. Defaults to None.
+             ignore_arg_types (List[Type[object]], optional): Each argument to the
+                 API endpoint function is used to compose the cache key. If there
+                 are any arguments that have no effect on the response (such as a
+                 `Request` or `Response` object), including their type in this list
+                 will ignore those arguments when the key is created. Defaults to None.
+             logger_system (logging.Logger, optional): Gets your custom logging config system
+                 if you provided for log operation, if not uses the default one
+             local (bool, optional): Set to True if you use local redis server.
+             host_url (str): URL for a Redis database.
+             password (str, optional): Password for Redis Cloud.
+             port (int, optional): Port number for Redis Cloud.
         """
         self.prefix = prefix
         self.response_header = response_header or DEFAULT_RESPONSE_HEADER
@@ -94,14 +94,26 @@ class FastApiRedisCache(metaclass=MetaSingleton):
         self._connect()
 
     def _connect(self):
-        self.log(RedisEvent.CONNECT_BEGIN, msg="Attempting to connect to Redis server...")
-        self.status, self.redis = redis_connect(self.host_url, self.local, self.password, self.port)
+        self.log(
+            RedisEvent.CONNECT_BEGIN, msg="Attempting to connect to Redis server..."
+        )
+        self.status, self.redis = redis_connect(
+            self.host_url, self.local, self.password, self.port
+        )
         if self.status == RedisStatus.CONNECTED:
-            self.log(RedisEvent.CONNECT_SUCCESS, msg="Redis client is connected to server.")
+            self.log(
+                RedisEvent.CONNECT_SUCCESS, msg="Redis client is connected to server."
+            )
         if self.status == RedisStatus.AUTH_ERROR:  # pragma: no cover
-            self.log(RedisEvent.CONNECT_FAIL, msg="Unable to connect to redis server due to authentication error.")
+            self.log(
+                RedisEvent.CONNECT_FAIL,
+                msg="Unable to connect to redis server due to authentication error.",
+            )
         if self.status == RedisStatus.CONN_ERROR:  # pragma: no cover
-            self.log(RedisEvent.CONNECT_FAIL, msg="Redis server did not respond to PING message.")
+            self.log(
+                RedisEvent.CONNECT_FAIL,
+                msg="Redis server did not respond to PING message.",
+            )
 
     def get_cache_key(self, func: Callable, *args: List, **kwargs: Dict) -> str:
         return get_cache_key(self.prefix, self.ignore_arg_types, func, *args, **kwargs)
@@ -113,10 +125,14 @@ class FastApiRedisCache(metaclass=MetaSingleton):
             self.log(RedisEvent.KEY_FOUND_IN_CACHE, key=key)
         return ttl, in_cache
 
-    def requested_resource_not_modified(self, request: Request, cached_data: str) -> bool:
+    def requested_resource_not_modified(
+        self, request: Request, cached_data: str
+    ) -> bool:
         if not request or "If-None-Match" not in request.headers:
             return False
-        check_etags = [etag.strip() for etag in request.headers["If-None-Match"].split(",") if etag]
+        check_etags = [
+            etag.strip() for etag in request.headers["If-None-Match"].split(",") if etag
+        ]
         if len(check_etags) == 1 and check_etags[0] == "*":
             return True
         return self.get_etag(cached_data) in check_etags
@@ -137,7 +153,11 @@ class FastApiRedisCache(metaclass=MetaSingleton):
         return cached
 
     def set_response_headers(
-        self, response: Response, cache_hit: bool, response_data: Dict = None, ttl: int = None
+        self,
+        response: Response,
+        cache_hit: bool,
+        response_data: Dict = None,
+        ttl: int = None,
     ) -> None:
         response.headers[self.response_header] = "Hit" if cache_hit else "Miss"
         expires_at = datetime.utcnow() + timedelta(seconds=ttl)
@@ -147,7 +167,13 @@ class FastApiRedisCache(metaclass=MetaSingleton):
         if "last_modified" in response_data:  # pragma: no cover
             response.headers["Last-Modified"] = response_data["last_modified"]
 
-    def log(self, event: RedisEvent, msg: Optional[str] = None, key: Optional[str] = None, value: Optional[str] = None):
+    def log(
+        self,
+        event: RedisEvent,
+        msg: Optional[str] = None,
+        key: Optional[str] = None,
+        value: Optional[str] = None,
+    ):
         """Log `RedisEvent` using the configured `Logger` object"""
         message = f"{self.get_log_time()} | {event.name}"
         if msg:
@@ -172,9 +198,11 @@ class FastApiRedisCache(metaclass=MetaSingleton):
         return datetime.now().strftime(LOG_TIMESTAMP)
 
     @staticmethod
-    def request_is_not_cacheable( request: Request ) -> bool:
+    def request_is_not_cacheable(request: Request) -> bool:
         return request and (
-                request.method not in ALLOWED_HTTP_TYPES
-                or any(
-            directive in request.headers.get("Cache-Control" , "") for directive in ["no-store" , "no-cache"])
+            request.method not in ALLOWED_HTTP_TYPES
+            or any(
+                directive in request.headers.get("Cache-Control", "")
+                for directive in ["no-store", "no-cache"]
+            )
         )

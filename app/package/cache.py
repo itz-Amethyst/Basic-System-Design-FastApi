@@ -34,36 +34,43 @@ def cache(*, expire: Union[int, timedelta] = ONE_YEAR_IN_SECONDS):
             """Return cached value if one exists, otherwise evaluate the wrapped function and cache the result."""
 
             func_kwargs = kwargs.copy()
-            request = func_kwargs.pop("request" , None)
-            response = func_kwargs.pop("response" , None)
+            request = func_kwargs.pop("request", None)
+            response = func_kwargs.pop("response", None)
             create_response_directly = not response
             if create_response_directly:
                 response = Response()
             redis_cache = FastApiRedisCache()
 
-            if redis_cache.not_connected or redis_cache.request_is_not_cacheable(request):
+            if redis_cache.not_connected or redis_cache.request_is_not_cacheable(
+                request
+            ):
                 # If the redis client is not connected or the request is not cacheable, no caching behavior is performed.
-                return await get_api_response_async(func , *args , **kwargs)
+                return await get_api_response_async(func, *args, **kwargs)
 
-            key = redis_cache.get_cache_key(func , *args , **kwargs)
-            ttl , in_cache = redis_cache.check_cache(key)
+            key = redis_cache.get_cache_key(func, *args, **kwargs)
+            ttl, in_cache = redis_cache.check_cache(key)
 
             if in_cache:
-                redis_cache.set_response_headers(response , True , deserialize_json(in_cache) , ttl)
-                if redis_cache.requested_resource_not_modified(request , in_cache):
+                redis_cache.set_response_headers(
+                    response, True, deserialize_json(in_cache), ttl
+                )
+                if redis_cache.requested_resource_not_modified(request, in_cache):
                     response.status_code = int(HTTPStatus.NOT_MODIFIED)
-                    return create_response(response , None , create_response_directly)
+                    return create_response(response, None, create_response_directly)
 
-                return create_response(response , in_cache , create_response_directly)
+                return create_response(response, in_cache, create_response_directly)
 
-            response_data = await get_api_response_async(func , *args , **kwargs)
+            response_data = await get_api_response_async(func, *args, **kwargs)
             ttl = calculate_ttl(expire)
-            cached = redis_cache.add_to_cache(key , response_data , ttl)
+            cached = redis_cache.add_to_cache(key, response_data, ttl)
 
             if cached:
-                redis_cache.set_response_headers(response , cache_hit = False , response_data = response_data ,
-                                                 ttl = ttl)
-                return create_response(response , serialize_json(response_data) , create_response_directly)
+                redis_cache.set_response_headers(
+                    response, cache_hit=False, response_data=response_data, ttl=ttl
+                )
+                return create_response(
+                    response, serialize_json(response_data), create_response_directly
+                )
 
             return response_data
 
@@ -72,10 +79,13 @@ def cache(*, expire: Union[int, timedelta] = ONE_YEAR_IN_SECONDS):
     return outer_wrapper
 
 
-
 async def get_api_response_async(func, *args, **kwargs):
     """Helper function that allows decorator to work with both async and non-async functions."""
-    return await func(*args, **kwargs) if asyncio.iscoroutinefunction(func) else func(*args, **kwargs)
+    return (
+        await func(*args, **kwargs)
+        if asyncio.iscoroutinefunction(func)
+        else func(*args, **kwargs)
+    )
 
 
 def calculate_ttl(expire: Union[int, timedelta]) -> int:
@@ -83,6 +93,7 @@ def calculate_ttl(expire: Union[int, timedelta]) -> int:
     if isinstance(expire, timedelta):
         expire = int(expire.total_seconds())
     return min(expire, ONE_YEAR_IN_SECONDS)
+
 
 def create_response(response, content, create_directly):
     """Creates a FastAPI response."""
@@ -105,5 +116,12 @@ cache_one_month = partial(cache, expire=ONE_MONTH_IN_SECONDS)
 cache_one_year = partial(cache, expire=ONE_YEAR_IN_SECONDS)
 
 
-for cache_wrapper in [cache_one_minute, cache_one_hour, cache_one_day, cache_one_week, cache_one_month, cache_one_year]:
+for cache_wrapper in [
+    cache_one_minute,
+    cache_one_hour,
+    cache_one_day,
+    cache_one_week,
+    cache_one_month,
+    cache_one_year,
+]:
     wraps(cache_wrapper)(cache)
