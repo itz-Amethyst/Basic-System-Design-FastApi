@@ -19,11 +19,11 @@ router = APIRouter(
     dependencies = [Depends(user_required)]
 )
 
-# @cache_one_hour()
 @router.get('/sqlalchemy')
+@cache_one_hour()
 def test_posts(db: Session = Depends(get_db)):
 
-    return {"message": db.query(Post).all()}
+    return  db.query(Post).all()
 
 # @router.get('/', response_model = list[schemas.PostView])
 @router.get('/', response_model = List[schemas.PostViewWithVotes], dependencies = [rate_limit('posts:get', 60, 30)])

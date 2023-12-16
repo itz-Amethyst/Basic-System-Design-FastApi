@@ -1,7 +1,7 @@
 """cache.py"""
 import asyncio
 from datetime import timedelta
-from functools import partial, wraps
+from functools import partial , wraps , update_wrapper
 from http import HTTPStatus
 from typing import Union
 
@@ -125,3 +125,10 @@ for cache_wrapper in [
     cache_one_year,
 ]:
     wraps(cache_wrapper)(cache)
+
+# update_wrapper(cache_one_minute, cache)
+# update_wrapper(cache_one_hour, cache)
+# update_wrapper(cache_one_day, cache)
+# update_wrapper(cache_one_week, cache)
+# update_wrapper(cache_one_month, cache)
+# update_wrapper(cache_one_year, cache)
