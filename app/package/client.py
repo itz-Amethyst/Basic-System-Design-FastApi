@@ -1,9 +1,11 @@
+import json
 import logging
 from datetime import datetime, timedelta
 from typing import Callable, Dict, List, Optional, Tuple, Type, Union
 
 from fastapi import Request, Response
 from redis import client
+from sqlalchemy.orm import registry
 
 from .enums import RedisEvent, RedisStatus
 from .key_gen import get_cache_key
@@ -137,20 +139,44 @@ class FastApiRedisCache(metaclass=MetaSingleton):
             return True
         return self.get_etag(cached_data) in check_etags
 
+    def filter_attributes( obj ):
+        excluded_types = (datetime , dict, registry, datetime)  # Add other types you want to exclude
+        return {key: value for key , value in obj.__dict__.items() if not isinstance(value , excluded_types)}
+
     def add_to_cache(self, key: str, value: Dict, expire: int) -> bool:
-        response_data = None
+        # response_data = None
+        # try:
+        #     for obj in value:
+        #         response_data = serialize_json(obj)
+
+        serialized_dict = {}
         try:
-            response_data = serialize_json(value)
+
+
+            # for key , messages in value.items():
+                serialized_messages = []
+                if hasattr(value, "__len__"):
+                    for obj in value:
+                        # filtered_value = self.filter_attributes(obj.__dict__)
+                        serialized_object = serialize_json(obj.__dict__)
+                        # serialized_messages.append(serialized_object)
+                        serialized_messages.append(serialized_object)
+
+                    # Add the serialized messages to the result dictionary
+                    serialized_dict[key] = serialized_messages
+                else:
+                    serialized_object = serialize_json(value.__dict__)
+                    serialized_dict = serialized_object
         except TypeError:
             message = f"Object of type {type(value)} is not JSON-serializable"
             self.log(RedisEvent.FAILED_TO_CACHE_KEY, msg=message, key=key)
             return False
-        cached = self.redis.set(name=key, value=response_data, ex=expire)
+        cached = self.redis.set(name=key, value=json.dumps(serialized_dict), ex=expire)
         if cached:
             self.log(RedisEvent.KEY_ADDED_TO_CACHE, key=key)
         else:  # pragma: no cover
             self.log(RedisEvent.FAILED_TO_CACHE_KEY, key=key, value=value)
-        return cached
+        return cached , serialized_dict
 
     def set_response_headers(
         self,
@@ -163,9 +189,10 @@ class FastApiRedisCache(metaclass=MetaSingleton):
         expires_at = datetime.utcnow() + timedelta(seconds=ttl)
         response.headers["Expires"] = expires_at.strftime(HTTP_TIME)
         response.headers["Cache-Control"] = f"max-age={ttl}"
-        response.headers["ETag"] = self.get_etag(response_data)
-        if "last_modified" in response_data:  # pragma: no cover
-            response.headers["Last-Modified"] = response_data["last_modified"]
+        # test, cached_data = self.get_etag(response_data)
+        # response.headers["ETag"] = test
+        # if "last_modified" in cached_data:  # pragma: no cover
+        #     response.headers["Last-Modified"] = response_data["last_modified"]
 
     def log(
         self,
@@ -186,11 +213,25 @@ class FastApiRedisCache(metaclass=MetaSingleton):
 
     @staticmethod
     def get_etag(cached_data: Union[str, bytes, Dict]) -> str:
+
         if isinstance(cached_data, bytes):
             cached_data = cached_data.decode()
-        if not isinstance(cached_data, str):
-            cached_data = serialize_json(cached_data)
-        return f"W/{hash(cached_data)}"
+
+        if hasattr(cached_data, "__len__"):
+
+            for obj in cached_data:
+                serialized_messages = []
+                # filtered_value = self.filter_attributes(obj.__dict__)
+                serialized_object = serialize_json(obj.__dict__)
+                # serialized_messages.append(serialized_object)
+                serialized_messages.append(serialized_object)
+
+
+            return f"W/{hash(tuple(serialized_messages))}", serialized_messages
+
+        if isinstance(cached_data.__dict__, dict):
+            cached_data = serialize_json(cached_data.__dict__)
+        return f"W/{hash(cached_data)}" , cached_data
 
     @staticmethod
     def get_log_time():
