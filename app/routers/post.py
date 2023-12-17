@@ -10,7 +10,7 @@ from app.deps.auth import user_required , get_current_user_info
 from app.deps import rate_limit
 
 from app.db.models import Post , Vote
-from app.package import cache_one_hour
+from app.package import cache
 
 router = APIRouter(
     prefix = '/post',
@@ -20,17 +20,18 @@ router = APIRouter(
 )
 
 @router.get('/sqlalchemy')
-@cache_one_hour()
+@cache(expire = 60)
 def test_posts(db: Session = Depends(get_db)):
 
     return  db.query(Post).all()
 
 # @router.get('/', response_model = list[schemas.PostView])
 @router.get('/', response_model = List[schemas.PostViewWithVotes], dependencies = [rate_limit('posts:get', 60, 30)])
+@cache(expire = 20)
 def get_posts( db: Session = Depends(get_db) , Limit: int = 10 , skip: int = 0 , search: Optional[str] = "" ):
     print(search)
 
-    # Two different query
+        # Two different query
     results = (db.query(Post, func.count(Vote.post_id).label('votes'))
                .join(Vote, Vote.post_id == Post.id, isouter = True)
                .filter(Post.title.contains(search) , Post.content.contains(search))
@@ -84,6 +85,7 @@ def create_Post(request: Request, post: schemas.CreatePost , db: Session = Depen
     return new_post
 
 @router.get("/{id}", response_model = schemas.PostView)
+@cache(expire = 60)
 def get_post_by_id(id:int, db: Session = Depends(get_db)):
 
     # post = db.query(models.Post).filter(models.Post.title == title).first()
