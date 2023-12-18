@@ -144,37 +144,20 @@ class FastApiRedisCache(metaclass=MetaSingleton):
         return {key: value for key , value in obj.__dict__.items() if not isinstance(value , excluded_types)}
 
     def add_to_cache(self, key: str, value: Dict, expire: int) -> bool:
-        # response_data = None
-        # try:
-        #     for obj in value:
-        #         response_data = serialize_json(obj)
-
-        serialized_dict = {}
         try:
-
-
-            # for key , messages in value.items():
-                serialized_messages = []
-                if hasattr(value, "__len__"):
-                    for obj in value:
-                        # filtered_value = self.filter_attributes(obj.__dict__)
-                        serialized_object = serialize_json(obj.__dict__)
-                        # serialized_messages.append(serialized_object)
-                        serialized_messages.append(serialized_object)
-
-                    # Add the serialized messages to the result dictionary
-                    serialized_dict[key] = serialized_messages
-                else:
-                    serialized_object = serialize_json(value.__dict__)
-                    serialized_dict = serialized_object
-        except TypeError:
-            message = f"Object of type {type(value)} is not JSON-serializable"
+            if hasattr(value , "__len__"):
+                serialized_messages = [serialize_json(obj.__dict__) for obj in value]
+            else:
+                serialized_messages = [serialize_json(value.__dict__)]
+            serialized_dict = {key: serialized_messages} if serialized_messages else {}
+        except TypeError as e:
+            message = f"Object of type {type(value)} is not JSON-serializable: => str{e}"
             self.log(RedisEvent.FAILED_TO_CACHE_KEY, msg=message, key=key)
             return False
         cached = self.redis.set(name=key, value=json.dumps(serialized_dict), ex=expire)
         if cached:
             self.log(RedisEvent.KEY_ADDED_TO_CACHE, key=key)
-        else:  # pragma: no cover
+        else:
             self.log(RedisEvent.FAILED_TO_CACHE_KEY, key=key, value=value)
         return cached , serialized_dict
 
@@ -211,27 +194,28 @@ class FastApiRedisCache(metaclass=MetaSingleton):
             message += f", value={value}"
         logger.info(message)
 
-    @staticmethod
-    def get_etag(cached_data: Union[str, bytes, Dict]) -> str:
-
-        if isinstance(cached_data, bytes):
-            cached_data = cached_data.decode()
-
-        if hasattr(cached_data, "__len__"):
-
-            for obj in cached_data:
-                serialized_messages = []
-                # filtered_value = self.filter_attributes(obj.__dict__)
-                serialized_object = serialize_json(obj.__dict__)
-                # serialized_messages.append(serialized_object)
-                serialized_messages.append(serialized_object)
-
-
-            return f"W/{hash(tuple(serialized_messages))}", serialized_messages
-
-        if isinstance(cached_data.__dict__, dict):
-            cached_data = serialize_json(cached_data.__dict__)
-        return f"W/{hash(cached_data)}" , cached_data
+    #? Rebuild Required
+    # @staticmethod
+    # def get_etag(cached_data: Union[str, bytes, Dict]) -> str:
+    #
+    #     if isinstance(cached_data, bytes):
+    #         cached_data = cached_data.decode()
+    #
+    #     if hasattr(cached_data, "__len__"):
+    #
+    #         for obj in cached_data:
+    #             serialized_messages = []
+    #             # filtered_value = self.filter_attributes(obj.__dict__)
+    #             serialized_object = serialize_json(obj.__dict__)
+    #             # serialized_messages.append(serialized_object)
+    #             serialized_messages.append(serialized_object)
+    #
+    #
+    #         return f"W/{hash(tuple(serialized_messages))}", serialized_messages
+    #
+    #     if isinstance(cached_data.__dict__, dict):
+    #         cached_data = serialize_json(cached_data.__dict__)
+    #     return f"W/{hash(cached_data)}" , cached_data
 
     @staticmethod
     def get_log_time():

@@ -81,7 +81,7 @@ def cache(*, expire: Union[int, timedelta] = ONE_YEAR_IN_SECONDS):
                     )
                 else:
                     return create_response(
-                        response , serialized_dict , create_response_directly
+                        response , serialized_dict[key][0] , create_response_directly
                     )
 
             return response_data
