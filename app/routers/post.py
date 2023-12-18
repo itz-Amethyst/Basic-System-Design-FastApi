@@ -10,7 +10,7 @@ from app.deps.auth import user_required , get_current_user_info
 from app.deps import rate_limit
 
 from app.db.models import Post , Vote
-from Perseus import cache
+from Cyrus import cache
 
 
 router = APIRouter(

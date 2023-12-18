@@ -11,7 +11,7 @@ from app.db.models import Parent
 
 from app.managers.permission import PermissionManager
 from app.managers.auth import oauth2_bearer_schema
-from Perseus import cache
+from Cyrus import cache
 
 router = APIRouter(
     prefix = '/orm',

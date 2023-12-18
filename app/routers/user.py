@@ -10,7 +10,7 @@ from app import schemas
 from app.deps import rate_limit
 
 from app.db.models import User
-from Perseus import cache
+from Cyrus import cache
 
 router = APIRouter(
     prefix = '/user',

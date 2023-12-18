@@ -1,7 +1,7 @@
 from fastapi import Response, Request
 from sqlalchemy.orm import Session
 
-from Perseus import Perseus
+from Cyrus import Cyrus
 from app.shared import settings
 from app.shared.logger import logger_system
 
@@ -16,7 +16,7 @@ class RedisCacheSingleton:
         return cls._instance
 
     def initialize_redis_cache(self):
-        self.redis_cache = Perseus(
+        self.redis_cache = Cyrus(
             prefix = "myapi-cache" ,
             response_header = "X-MyAPI-Cache" ,
             ignore_arg_types = [Request , Response , Session] ,
