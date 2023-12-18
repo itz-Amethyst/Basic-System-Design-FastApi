@@ -14,9 +14,9 @@ def user_required(token:str = Depends(oauth2_password)):
     #? To Save token to fix chaining dependencies !@$#
     if isinstance(token, str):
         settings.TOKEN_ACTUAL = token
-    async def decorator():
+    def decorator():
         print("inside")
-        return await AuthManager.verify_access_token(settings.TOKEN_ACTUAL, credentials_exception)
+        return AuthManager.verify_access_token(settings.TOKEN_ACTUAL, credentials_exception)
         # request.state.user = user
 
     dep = Depends(decorator)

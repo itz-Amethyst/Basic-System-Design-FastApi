@@ -32,7 +32,7 @@ class AuthManager:
             raise e
 
     @staticmethod
-    async def verify_access_token( token: str , credentials_exception ):
+    def verify_access_token( token: str , credentials_exception ):
 
         try:
             payload = jwt.decode(token , settings.SECRET_KEY , algorithms = [settings.ALGORITHM])
