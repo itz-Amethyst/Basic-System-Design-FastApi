@@ -10,6 +10,7 @@ from app import schemas
 from app.deps import rate_limit
 
 from app.db.models import User
+from Perseus import cache
 
 router = APIRouter(
     prefix = '/user',
@@ -43,6 +44,7 @@ async def create_user(request: Request, email: EmailStr = Form(),
     return await UserManager.register(user_data, request)
 
 @router.get('/{id}', response_model = schemas.UserView)
+@cache(expire = 30)
 def get_user(id: str, db: Session = Depends(get_db)):
 
     user = db.query(User).get(id)

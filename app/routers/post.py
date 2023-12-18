@@ -10,7 +10,8 @@ from app.deps.auth import user_required , get_current_user_info
 from app.deps import rate_limit
 
 from app.db.models import Post , Vote
-from app.package import cache
+from Perseus import cache
+
 
 router = APIRouter(
     prefix = '/post',
@@ -27,7 +28,6 @@ def test_posts(db: Session = Depends(get_db)):
 
 # @router.get('/', response_model = list[schemas.PostView])
 @router.get('/', response_model = List[schemas.PostViewWithVotes], dependencies = [rate_limit('posts:get', 60, 30)])
-@cache(expire = 20)
 def get_posts( db: Session = Depends(get_db) , Limit: int = 10 , skip: int = 0 , search: Optional[str] = "" ):
     print(search)
 
@@ -45,7 +45,9 @@ def get_posts( db: Session = Depends(get_db) , Limit: int = 10 , skip: int = 0 ,
 
     return results
 
+# Cache doesn't work on this query cause complicated and data is not ok to read
 @router.get("/specific_posts", response_model = list[schemas.PostViewWithVotes])
+#! @cache(expire = 20)
 def get_get_current_user_posts(request: Request, db:Session = Depends(get_db)):
 
     current_user = get_current_user_info(request = request)
@@ -85,7 +87,7 @@ def create_Post(request: Request, post: schemas.CreatePost , db: Session = Depen
     return new_post
 
 @router.get("/{id}", response_model = schemas.PostView)
-@cache(expire = 60)
+@cache(expire = 20)
 def get_post_by_id(id:int, db: Session = Depends(get_db)):
 
     # post = db.query(models.Post).filter(models.Post.title == title).first()

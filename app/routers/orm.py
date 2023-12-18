@@ -11,6 +11,7 @@ from app.db.models import Parent
 
 from app.managers.permission import PermissionManager
 from app.managers.auth import oauth2_bearer_schema
+from Perseus import cache
 
 router = APIRouter(
     prefix = '/orm',
@@ -43,6 +44,7 @@ def create_table(data:schemas.Orm, db: Session = Depends(get_db)):
 
 # You can use both option to check dependencies
 @router.get('/', status_code = status.HTTP_201_CREATED, response_model = List[schemas.OrmView], dependencies = [Depends(oauth2_bearer_schema), Depends(PermissionManager.is_admin)])
+@cache(expire = 50)
 def get_tables(db:Session = Depends(get_db)):
 
     tables = db.query(Parent).all()

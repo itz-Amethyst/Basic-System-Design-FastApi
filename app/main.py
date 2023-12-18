@@ -70,7 +70,7 @@ def startup():
     # except:
     #     logger_system.info("Something went wrong with redis")
 
-    # redis.ping()
+    redis.ping()
 
     admin_module = importlib.import_module('app.admin')
     admin_module.admin.mount_to(app)
